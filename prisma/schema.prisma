@@ -1,0 +1,297 @@
+// ERP grupo21 — SIMAS 2026
+// Modelo de datos. Ver docs/modelado-de-procesos.md para los flujos que lo originan.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Rol {
+  ADMIN
+  VENDEDOR
+  COMPRAS
+}
+
+/// Las operaciones nacen en BORRADOR (se pueden editar y no tocan el stock).
+/// Al CONFIRMAR impactan el stock y quedan inmutables. ANULADA revierte el stock.
+enum EstadoOperacion {
+  BORRADOR
+  CONFIRMADA
+  ANULADA
+}
+
+enum TipoMovimiento {
+  INGRESO
+  EGRESO
+  AJUSTE
+}
+
+/// De dónde vino el movimiento de stock. Permite rastrear cada unidad.
+enum OrigenMovimiento {
+  COMPRA
+  VENTA
+  ANULACION
+  AJUSTE_MANUAL
+}
+
+enum UnidadMedida {
+  UNIDAD
+  KG
+  LITRO
+  METRO
+  CAJA
+}
+
+// ---------------------------------------------------------------------------
+// Usuarios y acceso
+// ---------------------------------------------------------------------------
+
+/// El id coincide con el de Supabase Auth (auth.users.id): las credenciales las
+/// maneja Supabase, acá guardamos el perfil y el rol de negocio.
+model Usuario {
+  id           String   @id @db.Uuid
+  email        String   @unique
+  nombre       String
+  rol          Rol      @default(VENDEDOR)
+  activo       Boolean  @default(true)
+  creadoEn     DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  ventas       Venta[]
+  compras      Compra[]
+  movimientos  MovimientoStock[]
+
+  @@index([activo])
+  @@map("usuario")
+}
+
+// ---------------------------------------------------------------------------
+// Terceros
+// ---------------------------------------------------------------------------
+
+model Cliente {
+  id           String   @id @default(uuid()) @db.Uuid
+  razonSocial  String   @map("razon_social")
+  documento    String?  @unique /// CUIT o DNI
+  email        String?
+  telefono     String?
+  direccion    String?
+  activo       Boolean  @default(true)
+  creadoEn     DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  ventas       Venta[]
+
+  @@index([activo])
+  @@index([razonSocial])
+  @@map("cliente")
+}
+
+model Proveedor {
+  id           String   @id @default(uuid()) @db.Uuid
+  razonSocial  String   @map("razon_social")
+  documento    String?  @unique
+  email        String?
+  telefono     String?
+  direccion    String?
+  activo       Boolean  @default(true)
+  creadoEn     DateTime @default(now()) @map("creado_en")
+  actualizadoEn DateTime @updatedAt @map("actualizado_en")
+
+  compras      Compra[]
+
+  @@index([activo])
+  @@map("proveedor")
+}
+
+// ---------------------------------------------------------------------------
+// Productos y stock
+// ---------------------------------------------------------------------------
+
+model Producto {
+  id            String       @id @default(uuid()) @db.Uuid
+  sku           String       @unique
+  nombre        String
+  descripcion   String?
+  unidad        UnidadMedida @default(UNIDAD)
+
+  /// Precio de venta vigente. Las líneas de venta congelan su propia copia.
+  precioVenta   Decimal      @map("precio_venta") @db.Decimal(12, 2)
+  /// Último costo de compra registrado.
+  costo         Decimal      @default(0) @db.Decimal(12, 2)
+
+  /// Valor de consulta rápida. La verdad histórica está en MovimientoStock:
+  /// nunca se modifica este campo sin generar el movimiento correspondiente.
+  stockActual   Decimal      @default(0) @map("stock_actual") @db.Decimal(12, 2)
+  /// Umbral de reposición: por debajo, el sistema alerta.
+  stockMinimo   Decimal      @default(0) @map("stock_minimo") @db.Decimal(12, 2)
+
+  activo        Boolean      @default(true)
+  creadoEn      DateTime     @default(now()) @map("creado_en")
+  actualizadoEn DateTime     @updatedAt @map("actualizado_en")
+
+  lineasVenta   LineaVenta[]
+  lineasCompra  LineaCompra[]
+  movimientos   MovimientoStock[]
+  sugerencias   SugerenciaReposicion[]
+
+  @@index([activo])
+  @@index([nombre])
+  @@map("producto")
+}
+
+/// Libro mayor del stock: cada cambio de existencias deja un asiento acá.
+model MovimientoStock {
+  id             String           @id @default(uuid()) @db.Uuid
+  productoId     String           @map("producto_id") @db.Uuid
+  producto       Producto         @relation(fields: [productoId], references: [id], onDelete: Restrict)
+
+  tipo           TipoMovimiento
+  origen         OrigenMovimiento
+  /// Siempre positiva: el signo lo determina `tipo`.
+  cantidad       Decimal          @db.Decimal(12, 2)
+  /// Stock del producto después de aplicar este movimiento (foto del momento).
+  stockResultante Decimal         @map("stock_resultante") @db.Decimal(12, 2)
+
+  /// Venta o compra que lo generó, si corresponde.
+  ventaId        String?          @map("venta_id") @db.Uuid
+  compraId       String?          @map("compra_id") @db.Uuid
+  /// Obligatorio en ajustes manuales.
+  motivo         String?
+
+  usuarioId      String           @map("usuario_id") @db.Uuid
+  usuario        Usuario          @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  fecha          DateTime         @default(now())
+
+  @@index([productoId, fecha])
+  @@index([ventaId])
+  @@index([compraId])
+  @@map("movimiento_stock")
+}
+
+// ---------------------------------------------------------------------------
+// Ventas
+// ---------------------------------------------------------------------------
+
+model Venta {
+  id           String          @id @default(uuid()) @db.Uuid
+  numero       Int             @unique @default(autoincrement()) /// Número visible al usuario
+  clienteId    String          @map("cliente_id") @db.Uuid
+  cliente      Cliente         @relation(fields: [clienteId], references: [id], onDelete: Restrict)
+
+  estado       EstadoOperacion @default(BORRADOR)
+  fecha        DateTime        @default(now())
+  /// Suma de los subtotales de las líneas, recalculada al confirmar.
+  total        Decimal         @default(0) @db.Decimal(12, 2)
+  observaciones String?
+
+  usuarioId    String          @map("usuario_id") @db.Uuid
+  usuario      Usuario         @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  confirmadaEn DateTime?       @map("confirmada_en")
+  anuladaEn    DateTime?       @map("anulada_en")
+  creadoEn     DateTime        @default(now()) @map("creado_en")
+
+  lineas       LineaVenta[]
+
+  @@index([clienteId])
+  @@index([estado, fecha])
+  @@map("venta")
+}
+
+model LineaVenta {
+  id             String   @id @default(uuid()) @db.Uuid
+  ventaId        String   @map("venta_id") @db.Uuid
+  venta          Venta    @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  productoId     String   @map("producto_id") @db.Uuid
+  producto       Producto @relation(fields: [productoId], references: [id], onDelete: Restrict)
+
+  cantidad       Decimal  @db.Decimal(12, 2)
+  /// Copia del precio al momento de confirmar: si el producto cambia de precio,
+  /// las ventas históricas no se alteran.
+  precioUnitario Decimal  @map("precio_unitario") @db.Decimal(12, 2)
+  subtotal       Decimal  @db.Decimal(12, 2)
+
+  @@unique([ventaId, productoId]) /// Un producto no se repite en la misma venta
+  @@index([productoId])
+  @@map("linea_venta")
+}
+
+// ---------------------------------------------------------------------------
+// Compras
+// ---------------------------------------------------------------------------
+
+model Compra {
+  id            String          @id @default(uuid()) @db.Uuid
+  numero        Int             @unique @default(autoincrement())
+  proveedorId   String          @map("proveedor_id") @db.Uuid
+  proveedor     Proveedor       @relation(fields: [proveedorId], references: [id], onDelete: Restrict)
+
+  estado        EstadoOperacion @default(BORRADOR)
+  fecha         DateTime        @default(now())
+  total         Decimal         @default(0) @db.Decimal(12, 2)
+  /// Número de factura del proveedor.
+  comprobante   String?
+  observaciones String?
+
+  usuarioId     String          @map("usuario_id") @db.Uuid
+  usuario       Usuario         @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  confirmadaEn  DateTime?       @map("confirmada_en")
+  anuladaEn     DateTime?       @map("anulada_en")
+  creadoEn      DateTime        @default(now()) @map("creado_en")
+
+  lineas        LineaCompra[]
+
+  @@index([proveedorId])
+  @@index([estado, fecha])
+  @@map("compra")
+}
+
+model LineaCompra {
+  id            String   @id @default(uuid()) @db.Uuid
+  compraId      String   @map("compra_id") @db.Uuid
+  compra        Compra   @relation(fields: [compraId], references: [id], onDelete: Cascade)
+  productoId    String   @map("producto_id") @db.Uuid
+  producto      Producto @relation(fields: [productoId], references: [id], onDelete: Restrict)
+
+  cantidad      Decimal  @db.Decimal(12, 2)
+  costoUnitario Decimal  @map("costo_unitario") @db.Decimal(12, 2)
+  subtotal      Decimal  @db.Decimal(12, 2)
+
+  @@unique([compraId, productoId])
+  @@index([productoId])
+  @@map("linea_compra")
+}
+
+// ---------------------------------------------------------------------------
+// IA: sugerencia de reposición
+// ---------------------------------------------------------------------------
+
+/// Propuesta generada por la IA a partir del histórico de ventas.
+/// Nunca modifica stock ni crea compras: un humano la acepta o la descarta.
+model SugerenciaReposicion {
+  id             String    @id @default(uuid()) @db.Uuid
+  productoId     String    @map("producto_id") @db.Uuid
+  producto       Producto  @relation(fields: [productoId], references: [id], onDelete: Cascade)
+
+  cantidadSugerida Decimal @map("cantidad_sugerida") @db.Decimal(12, 2)
+  /// Explicación en lenguaje natural de por qué se sugiere.
+  justificacion  String
+  /// Días estimados hasta quedarse sin stock al ritmo de venta actual.
+  diasCobertura  Int?      @map("dias_cobertura")
+
+  generadaEn     DateTime  @default(now()) @map("generada_en")
+  /// null = pendiente de revisión.
+  aceptada       Boolean?
+  revisadaEn     DateTime? @map("revisada_en")
+
+  @@index([productoId, generadaEn])
+  @@map("sugerencia_reposicion")
+}
