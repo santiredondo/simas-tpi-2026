@@ -11,8 +11,8 @@ Trabajo Práctico Integrador · **Sistemas de Información para Manufactura (SIM
 | Nombre y apellido | Legajo | GitHub |
 | --- | --- | --- |
 | Santiago Redondo | _a completar_ | [@santiredondo](https://github.com/santiredondo) |
-| Lautaro Rizzi | _a completar_ | _a completar_ |
-| David Bustamante | _a completar_ | _a completar_ |
+| Lautaro Rizzi | _a completar_ | [@lautarorizzi1996-dot](https://github.com/lautarorizzi1996-dot) |
+| David Bustamante | _a completar_ | [@dmb824](https://github.com/dmb824) |
 
 ## Entregable 1
 
