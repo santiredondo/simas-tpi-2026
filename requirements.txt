@@ -1,0 +1,6 @@
+# ERP grupo21 — SIMAS 2026
+Flask==3.1.2
+Flask-SQLAlchemy==3.1.1
+PyMySQL==1.1.1
+cryptography==46.0.2
+python-dotenv==1.1.1

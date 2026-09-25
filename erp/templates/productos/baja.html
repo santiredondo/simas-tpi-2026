@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block titulo %}Dar de baja · ERP grupo21{% endblock %}
+
+{% block contenido %}
+  <nav class="miga">
+    <a href="{{ url_for('productos.listar') }}">Productos</a> / Dar de baja
+  </nav>
+
+  <div class="confirmacion">
+    <h1>¿Dar de baja este producto?</h1>
+
+    <p class="producto-resumen">
+      <span class="mono">{{ producto.codigo }}</span> — {{ producto.nombre }}<br>
+      <span class="sutil">
+        Stock actual: {{ producto.stock|cantidad }} {{ producto.unidad|lower }}
+      </span>
+    </p>
+
+    <p class="sutil">
+      El producto deja de aparecer en el listado y no se podrá usar en nuevas
+      ventas. <strong>No se borra</strong>: el historial se conserva y se puede
+      reactivar cuando quieras.
+    </p>
+
+    <form method="post" class="acciones-form">
+      <button class="boton boton--peligro" type="submit">Sí, dar de baja</button>
+      <a class="cancelar" href="{{ url_for('productos.listar') }}">Cancelar</a>
+    </form>
+  </div>
+{% endblock %}

@@ -1,6 +1,6 @@
 # simas-tpi-2026 — Team grupo21
 
-Trabajo Práctico Integrador · **Sistemas de Información para Manufactura (SIMAS)** · 2026
+ERP con IA · Trabajo Práctico Integrador · **Sistemas de Información para Manufactura (SIMAS)** · 2026
 
 ## Team
 
@@ -14,9 +14,88 @@ Trabajo Práctico Integrador · **Sistemas de Información para Manufactura (SIM
 | Lautaro Rizzi | _a completar_ | [@lautarorizzi1996-dot](https://github.com/lautarorizzi1996-dot) |
 | David Bustamante | _a completar_ | [@dmb824](https://github.com/dmb824) |
 
-## Entregable 1
+---
 
-- [x] Clonar el repositorio del TPI
-- [x] Elegir nombre del team
-- [x] Crear la branch `team/entregable1`
-- [x] Crear el README con los integrantes
+## Stack
+
+| Capa | Tecnología |
+| --- | --- |
+| Lenguaje | Python 3.11 |
+| Framework web | Flask 3.1 |
+| ORM | SQLAlchemy (vía Flask-SQLAlchemy) |
+| Base de datos | MariaDB 13 |
+| Plantillas | Jinja2 + CSS propio |
+
+---
+
+## Cómo levantarlo
+
+**1. Requisitos**: Python 3.11+ y MariaDB instalados.
+
+**2. Crear la base de datos** (una sola vez):
+
+```sql
+CREATE DATABASE erp_grupo21_flask CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+**3. Preparar el entorno** (desde la carpeta del proyecto, un comando por vez):
+
+```
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+```
+
+**4. Editar `.env`** con tu usuario y contraseña de MariaDB.
+
+**5. Crear las tablas y cargar datos de ejemplo**:
+
+```
+python semillas.py
+```
+
+**6. Levantar el servidor**:
+
+```
+python run.py
+```
+
+Abrir http://localhost:5000
+
+---
+
+## Estructura
+
+```
+erp/
+  __init__.py        fábrica de la aplicación y filtros de plantilla
+  config.py          configuración leída del .env
+  extensiones.py     instancia de SQLAlchemy
+  modelos.py         modelos de datos (Producto)
+  validaciones.py    validación de formularios
+  vistas/
+    productos.py     CRUD de productos (blueprint)
+  templates/         plantillas Jinja2
+  static/            estilos
+docs/                modelado de procesos, diseño y decisiones técnicas
+sql/                 script MariaDB del flujo de venta (checkpoint 4)
+run.py               punto de entrada
+semillas.py          datos de ejemplo
+```
+
+---
+
+## Avance
+
+| Entrega | Estado |
+| --- | --- |
+| Entregable 1 — repo, team y README | ✅ |
+| Modelado de procesos | ✅ [docs/modelado-de-procesos.md](docs/modelado-de-procesos.md) |
+| Checkpoint 4 — script MariaDB del flujo de venta | ✅ [sql/erp_ventas_mariadb.sql](sql/erp_ventas_mariadb.sql) |
+| Workshop 3 · Checkpoint 1 — campos y pantallas | ✅ [docs/crud-productos-diseno.md](docs/crud-productos-diseno.md) |
+| Workshop 3 — CRUD de Productos | ✅ |
+| Módulo de clientes | ⬜ |
+| Registro de compras y ventas | ⬜ |
+| Administración de usuarios | ⬜ |
+| IA — sugerencia de reposición | ⬜ |

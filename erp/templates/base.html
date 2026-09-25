@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}ERP grupo21{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
+</head>
+<body>
+  <header class="barra">
+    <a class="marca" href="{{ url_for('productos.listar') }}">ERP grupo21</a>
+    <nav>
+      <a href="{{ url_for('productos.listar') }}">Productos</a>
+    </nav>
+  </header>
+
+  <main class="contenido">
+    {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
+      <p class="aviso aviso--{{ categoria }}">{{ mensaje }}</p>
+    {% endfor %}
+
+    {% block contenido %}{% endblock %}
+  </main>
+
+  <footer class="pie">
+    SIMAS 2026 · Team grupo21 · Santiago Redondo · Lautaro Rizzi · David Bustamante
+  </footer>
+</body>
+</html>

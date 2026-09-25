@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ titulo }} · ERP grupo21{% endblock %}
+
+{% macro campo(nombre, etiqueta, tipo="text", extra="") %}
+  <div class="campo">
+    <label for="{{ nombre }}">{{ etiqueta }}</label>
+    <input type="{{ tipo }}" id="{{ nombre }}" name="{{ nombre }}"
+           value="{{ valores.get(nombre, '') }}"
+           class="{{ 'con-error' if errores.get(nombre) }}" {{ extra|safe }}>
+    {% if errores.get(nombre) %}
+      <p class="error">⚠ {{ errores[nombre] }}</p>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{% block contenido %}
+  <nav class="miga">
+    <a href="{{ url_for('productos.listar') }}">Productos</a> / {{ titulo }}
+  </nav>
+
+  <h1>{{ titulo }}</h1>
+
+  {% if errores %}
+    <p class="aviso aviso--error">Revisá los campos marcados.</p>
+  {% endif %}
+
+  <form class="formulario" method="post" novalidate>
+    <div class="fila">
+      {{ campo("codigo", "Código *", extra='placeholder="PRD-006" maxlength="30" required') }}
+
+      <div class="campo">
+        <label for="unidad">Unidad de medida *</label>
+        <select id="unidad" name="unidad" class="{{ 'con-error' if errores.get('unidad') }}">
+          {% for unidad in unidades %}
+            <option value="{{ unidad }}" {{ 'selected' if valores.get('unidad') == unidad }}>
+              {{ unidad }}
+            </option>
+          {% endfor %}
+        </select>
+        {% if errores.get("unidad") %}
+          <p class="error">⚠ {{ errores["unidad"] }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    {{ campo("nombre", "Nombre *", extra='maxlength="150" required') }}
+
+    <div class="campo">
+      <label for="descripcion">Descripción</label>
+      <textarea id="descripcion" name="descripcion" rows="3"
+                class="{{ 'con-error' if errores.get('descripcion') }}">{{ valores.get('descripcion', '') }}</textarea>
+      {% if errores.get("descripcion") %}
+        <p class="error">⚠ {{ errores["descripcion"] }}</p>
+      {% endif %}
+    </div>
+
+    <div class="fila fila--tres">
+      {{ campo("precio", "Precio *", tipo="number", extra='step="0.01" min="0" required') }}
+      {{ campo("stock", "Stock *", tipo="number", extra='step="0.01" min="0" required') }}
+      {{ campo("stock_minimo", "Stock mínimo *", tipo="number", extra='step="0.01" min="0" required') }}
+    </div>
+
+    <div class="acciones-form">
+      <button class="boton boton--primario" type="submit">{{ etiqueta_boton }}</button>
+      <a class="cancelar" href="{{ url_for('productos.listar') }}">Cancelar</a>
+    </div>
+  </form>
+
+  {% if producto %}
+    <p class="sutil pie-dato">
+      Última modificación: {{ producto.actualizado_en.strftime('%d/%m/%Y %H:%M') }}
+    </p>
+  {% endif %}
+{% endblock %}

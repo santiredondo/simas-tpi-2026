@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block titulo %}Productos · ERP grupo21{% endblock %}
+
+{% block contenido %}
+  <div class="encabezado">
+    <div>
+      <h1>Productos</h1>
+      <p class="sutil">
+        {{ productos|length }} producto{{ '' if productos|length == 1 else 's' }}
+        {{ 'en total (incluye dados de baja)' if ver == 'todos' else 'activos' }}
+      </p>
+    </div>
+    <a class="boton boton--primario" href="{{ url_for('productos.crear') }}">+ Nuevo producto</a>
+  </div>
+
+  {# Búsqueda por GET: la URL queda compartible y anda sin JavaScript. #}
+  <form class="filtros" method="get" action="{{ url_for('productos.listar') }}">
+    <input type="search" name="q" value="{{ texto }}" placeholder="Buscar por código o nombre...">
+    <select name="ver">
+      <option value="activos" {{ 'selected' if ver != 'todos' }}>Solo activos</option>
+      <option value="todos" {{ 'selected' if ver == 'todos' }}>Todos</option>
+    </select>
+    <button class="boton" type="submit">Buscar</button>
+  </form>
+
+  {% if not productos %}
+    <p class="vacio">
+      {% if texto %}
+        No hay productos que coincidan con "{{ texto }}".
+      {% else %}
+        Todavía no hay productos cargados.
+      {% endif %}
+    </p>
+  {% else %}
+    <div class="tabla-scroll">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th class="der">Precio</th>
+            <th class="der">Stock</th>
+            <th>Estado</th>
+            <th class="der">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for producto in productos %}
+            <tr class="{{ '' if producto.activo else 'inactivo' }}">
+              <td class="mono">{{ producto.codigo }}</td>
+              <td>
+                <strong>{{ producto.nombre }}</strong>
+                {% if producto.descripcion %}
+                  <span class="sutil bloque">{{ producto.descripcion }}</span>
+                {% endif %}
+              </td>
+              <td class="der num">{{ producto.precio|pesos }}</td>
+              <td class="der num">
+                {{ producto.stock|cantidad }} {{ producto.unidad|lower }}
+              </td>
+              <td>
+                {% if not producto.activo %}
+                  <span class="etiqueta etiqueta--gris">Dado de baja</span>
+                {% elif producto.necesita_reposicion %}
+                  <span class="etiqueta etiqueta--ambar">Reponer</span>
+                {% else %}
+                  <span class="etiqueta etiqueta--verde">OK</span>
+                {% endif %}
+              </td>
+              <td class="der acciones">
+                {% if producto.activo %}
+                  <a href="{{ url_for('productos.editar', id_producto=producto.id) }}">Editar</a>
+                  <a class="peligro" href="{{ url_for('productos.baja', id_producto=producto.id) }}">Dar de baja</a>
+                {% else %}
+                  <form method="post" action="{{ url_for('productos.reactivar', id_producto=producto.id) }}">
+                    <button class="enlace" type="submit">Reactivar</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+{% endblock %}

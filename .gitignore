@@ -1,34 +1,27 @@
-# dependencias
-/node_modules
-/.pnp
-.pnp.*
-
-# build
-/.next/
-/out/
-/build
-next-env.d.ts
-*.tsbuildinfo
-
 # entorno — NUNCA commitear credenciales
 .env
 .env*.local
 !.env.example
 
-# prisma
-/prisma/migrations/dev.db*
-
-# testing
-/coverage
-
-# vercel
-.vercel
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
 
 # sistema / editores
 .DS_Store
 Thumbs.db
 *.log
-npm-debug.log*
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# restos del esqueleto Node (a eliminar)
+node_modules/
+.next/
+next-env.d.ts
+tsconfig.tsbuildinfo
