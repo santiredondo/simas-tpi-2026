@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block titulo %}Anular venta · ERP grupo21{% endblock %}
+
+{% block contenido %}
+  <nav class="miga">
+    <a href="{{ url_for('ventas.detalle', id_venta=venta.id) }}">Venta #{{ venta.id }}</a> / Anular
+  </nav>
+
+  <div class="confirmacion">
+    <h1>¿Anular la venta #{{ venta.id }}?</h1>
+
+    <p class="producto-resumen">
+      <strong>{{ venta.cliente.razon_social }}</strong><br>
+      <span class="sutil">
+        {{ venta.lineas|length }} renglón{{ 'es' if venta.lineas|length != 1 }} ·
+        Total {{ venta.total|pesos }}
+      </span>
+    </p>
+
+    <p class="sutil">
+      El stock de cada producto <strong>vuelve a su valor anterior</strong> y queda
+      registrado el movimiento inverso. La venta no se borra: pasa a estado
+      ANULADA y se conserva en el historial.
+    </p>
+
+    <form method="post" class="acciones-form">
+      <button class="boton boton--peligro" type="submit">Sí, anular la venta</button>
+      <a class="cancelar" href="{{ url_for('ventas.detalle', id_venta=venta.id) }}">Cancelar</a>
+    </form>
+  </div>
+{% endblock %}

@@ -1,5 +1,5 @@
 -- =============================================================================
--- ERP grupo21 — SIMAS 2026
+-- ERP grupo21 — SIMA 2026
 -- Modelado del flujo de VENTA DE PRODUCTOS en MariaDB.
 --
 -- Objetivo: registrar ventas a clientes descontando stock de forma que la

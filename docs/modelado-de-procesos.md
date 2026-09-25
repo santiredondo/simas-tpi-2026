@@ -1,6 +1,6 @@
 # Modelado de Procesos — ERP grupo21
 
-Trabajo Práctico Integrador · SIMAS 2026 · Team **grupo21**
+Trabajo Práctico Integrador · SIMA 2026 · Team **grupo21**
 
 Este documento define **qué hace el ERP** (módulos), **quién lo usa** (actores), **sobre qué datos opera** (entidades) y **cómo fluye el trabajo** (procesos). Es el paso previo al modelo de datos definitivo y a la implementación.
 

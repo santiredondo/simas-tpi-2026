@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block titulo %}Ventas · ERP grupo21{% endblock %}
+
+{% block contenido %}
+  <div class="encabezado">
+    <div>
+      <h1>Ventas</h1>
+      <p class="sutil">{{ ventas|length }} venta{{ '' if ventas|length == 1 else 's' }}</p>
+    </div>
+    <a class="boton boton--primario" href="{{ url_for('ventas.nueva') }}">+ Nueva venta</a>
+  </div>
+
+  <form class="filtros" method="get" action="{{ url_for('ventas.listar') }}">
+    <select name="estado">
+      <option value="" {{ 'selected' if not estado }}>Todos los estados</option>
+      <option value="BORRADOR" {{ 'selected' if estado == 'BORRADOR' }}>Borradores</option>
+      <option value="CONFIRMADA" {{ 'selected' if estado == 'CONFIRMADA' }}>Confirmadas</option>
+      <option value="ANULADA" {{ 'selected' if estado == 'ANULADA' }}>Anuladas</option>
+    </select>
+    <button class="boton" type="submit">Filtrar</button>
+  </form>
+
+  {% if not ventas %}
+    <p class="vacio">Todavía no hay ventas registradas.</p>
+  {% else %}
+    <div class="tabla-scroll">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th class="der">Renglones</th>
+            <th class="der">Total</th>
+            <th>Estado</th>
+            <th class="der">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for venta in ventas %}
+            <tr class="{{ 'inactivo' if venta.estado == 'ANULADA' }}">
+              <td class="mono">#{{ venta.id }}</td>
+              <td>{{ venta.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+              <td>{{ venta.cliente.razon_social }}</td>
+              <td class="der num">{{ venta.lineas|length }}</td>
+              <td class="der num">{{ venta.total|pesos }}</td>
+              <td>
+                {% if venta.estado == 'CONFIRMADA' %}
+                  <span class="etiqueta etiqueta--verde">Confirmada</span>
+                {% elif venta.estado == 'BORRADOR' %}
+                  <span class="etiqueta etiqueta--ambar">Borrador</span>
+                {% else %}
+                  <span class="etiqueta etiqueta--gris">Anulada</span>
+                {% endif %}
+              </td>
+              <td class="der acciones">
+                <a href="{{ url_for('ventas.detalle', id_venta=venta.id) }}">Ver</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+{% endblock %}

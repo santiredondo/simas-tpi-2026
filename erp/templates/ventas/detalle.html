@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block titulo %}Venta #{{ venta.id }} · ERP grupo21{% endblock %}
+
+{% block contenido %}
+  <nav class="miga">
+    <a href="{{ url_for('ventas.listar') }}">Ventas</a> / Venta #{{ venta.id }}
+  </nav>
+
+  <div class="encabezado">
+    <div>
+      <h1>
+        Venta #{{ venta.id }}
+        {% if venta.estado == 'CONFIRMADA' %}
+          <span class="etiqueta etiqueta--verde">Confirmada</span>
+        {% elif venta.estado == 'BORRADOR' %}
+          <span class="etiqueta etiqueta--ambar">Borrador</span>
+        {% else %}
+          <span class="etiqueta etiqueta--gris">Anulada</span>
+        {% endif %}
+      </h1>
+      <p class="sutil">
+        {{ venta.cliente.razon_social }}
+        {% if venta.cliente.documento %} · {{ venta.cliente.documento }}{% endif %}
+        · {{ venta.fecha.strftime('%d/%m/%Y %H:%M') }}
+      </p>
+      {% if venta.observaciones %}
+        <p class="sutil">{{ venta.observaciones }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ---------- Agregar productos: solo mientras es borrador ---------- #}
+  {% if venta.editable %}
+    <form class="filtros" method="post" action="{{ url_for('ventas.agregar', id_venta=venta.id) }}">
+      <select name="producto_id" required>
+        <option value="">Elegí un producto...</option>
+        {% for producto in productos %}
+          <option value="{{ producto.id }}">
+            {{ producto.codigo }} — {{ producto.nombre }}
+            ({{ producto.stock|cantidad }} disp. · {{ producto.precio|pesos }})
+          </option>
+        {% endfor %}
+      </select>
+      <input type="number" name="cantidad" value="1" step="0.01" min="0.01"
+             style="max-width:120px" required>
+      <button class="boton boton--primario" type="submit">Agregar</button>
+    </form>
+  {% endif %}
+
+  {# ---------- Renglones ---------- #}
+  {% if not venta.lineas %}
+    <p class="vacio">La venta no tiene renglones todavía.</p>
+  {% else %}
+    <div class="tabla-scroll">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Producto</th>
+            <th class="der">Cantidad</th>
+            <th class="der">Precio unit.</th>
+            <th class="der">Subtotal</th>
+            {% if venta.editable %}<th class="der"></th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for linea in venta.lineas %}
+            <tr>
+              <td class="mono">{{ linea.producto.codigo }}</td>
+              <td>{{ linea.producto.nombre }}</td>
+              <td class="der num">{{ linea.cantidad|cantidad }}</td>
+              <td class="der num">{{ linea.precio_unitario|pesos }}</td>
+              <td class="der num">{{ linea.subtotal|pesos }}</td>
+              {% if venta.editable %}
+                <td class="der acciones">
+                  <form method="post"
+                        action="{{ url_for('ventas.quitar', id_venta=venta.id, id_linea=linea.id) }}">
+                    <button class="enlace" type="submit">Quitar</button>
+                  </form>
+                </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="{{ 4 if not venta.editable else 4 }}" class="der"><strong>Total</strong></td>
+            <td class="der num"><strong>{{ venta.total|pesos }}</strong></td>
+            {% if venta.editable %}<td></td>{% endif %}
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  {% endif %}
+
+  {# ---------- Acciones según el estado ---------- #}
+  <div class="acciones-form" style="margin-top:1.25rem">
+    {% if venta.estado == 'BORRADOR' %}
+      <form method="post" action="{{ url_for('ventas.confirmar', id_venta=venta.id) }}">
+        <button class="boton boton--primario" type="submit"
+                {{ 'disabled' if not venta.lineas }}>
+          Confirmar venta
+        </button>
+      </form>
+      <span class="sutil">Al confirmar se descuenta el stock y la venta ya no se puede editar.</span>
+    {% elif venta.estado == 'CONFIRMADA' %}
+      <a class="boton boton--peligro" href="{{ url_for('ventas.anular', id_venta=venta.id) }}">
+        Anular venta
+      </a>
+      <span class="sutil">
+        Confirmada el {{ venta.confirmada_en.strftime('%d/%m/%Y %H:%M') }}
+      </span>
+    {% else %}
+      <span class="sutil">
+        Anulada el {{ venta.anulada_en.strftime('%d/%m/%Y %H:%M') }} — el stock fue devuelto.
+      </span>
+    {% endif %}
+  </div>
+
+  {# ---------- Trazabilidad del stock ---------- #}
+  {% if movimientos %}
+    <h2 style="margin-top:2rem;font-size:1.1rem">Movimientos de stock</h2>
+    <p class="sutil">Cada unidad que entró o salió por esta venta, con el stock que quedó.</p>
+    <div class="tabla-scroll" style="margin-top:0.75rem">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Producto</th>
+            <th>Tipo</th>
+            <th>Origen</th>
+            <th class="der">Cantidad</th>
+            <th class="der">Stock resultante</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for movimiento in movimientos %}
+            <tr>
+              <td>{{ movimiento.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+              <td class="mono">{{ movimiento.producto.codigo }}</td>
+              <td>
+                {% if movimiento.tipo == 'EGRESO' %}
+                  <span class="etiqueta etiqueta--ambar">Egreso</span>
+                {% else %}
+                  <span class="etiqueta etiqueta--verde">Ingreso</span>
+                {% endif %}
+              </td>
+              <td class="sutil">{{ movimiento.origen|lower }}</td>
+              <td class="der num">{{ movimiento.cantidad|cantidad }}</td>
+              <td class="der num">{{ movimiento.stock_resultante|cantidad }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+{% endblock %}

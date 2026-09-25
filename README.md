@@ -1,6 +1,6 @@
 # simas-tpi-2026 — Team grupo21
 
-ERP con IA · Trabajo Práctico Integrador · **Sistemas de Información para Manufactura (SIMAS)** · 2026
+ERP con IA · Trabajo Práctico Integrador · **Sistemas de Información para Manufactura (SIMA)** · 2026
 
 ## Team
 
@@ -72,11 +72,13 @@ erp/
   __init__.py        fábrica de la aplicación y filtros de plantilla
   config.py          configuración leída del .env
   extensiones.py     instancia de SQLAlchemy
-  modelos.py         modelos de datos (Producto)
+  modelos.py         modelos de datos
   validaciones.py    validación de formularios
+  servicios.py       reglas de negocio de ventas (stock, confirmación, anulación)
   vistas/
     productos.py     CRUD de productos (blueprint)
     clientes.py      CRUD de clientes (blueprint)
+    ventas.py        registro de ventas (blueprint)
   templates/         plantillas Jinja2
   static/            estilos
 docs/                modelado de procesos, diseño y decisiones técnicas
@@ -98,6 +100,7 @@ semillas.py          datos de ejemplo
 | Workshop 3 · Checkpoint 2 — CRUD generado e iterado | ✅ [docs/crud-productos-iteracion.md](docs/crud-productos-iteracion.md) |
 | Workshop 3 — CRUD de Productos | ✅ |
 | Módulo de clientes | ✅ |
-| Registro de compras y ventas | ⬜ |
+| Registro de ventas (con descuento de stock) | ✅ |
+| Registro de compras | ⬜ |
 | Administración de usuarios | ⬜ |
 | IA — sugerencia de reposición | ⬜ |
