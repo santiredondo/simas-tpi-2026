@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block titulo %}Dar de baja · ERP grupo21{% endblock %}
+
+{% block contenido %}
+  <nav class="miga">
+    <a href="{{ url_for('clientes.listar') }}">Clientes</a> / Dar de baja
+  </nav>
+
+  <div class="confirmacion">
+    <h1>¿Dar de baja este cliente?</h1>
+
+    <p class="producto-resumen">
+      <strong>{{ cliente.razon_social }}</strong><br>
+      <span class="sutil">
+        {{ cliente.documento or 'Sin documento cargado' }}
+        {% if cliente.email %} · {{ cliente.email }}{% endif %}
+      </span>
+    </p>
+
+    <p class="sutil">
+      El cliente deja de aparecer en el listado y no se le podrán registrar
+      nuevas ventas. <strong>No se borra</strong>: sus ventas históricas se
+      conservan y se puede reactivar cuando quieras.
+    </p>
+
+    <form method="post" class="acciones-form">
+      <button class="boton boton--peligro" type="submit">Sí, dar de baja</button>
+      <a class="cancelar" href="{{ url_for('clientes.listar') }}">Cancelar</a>
+    </form>
+  </div>
+{% endblock %}

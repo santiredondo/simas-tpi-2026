@@ -86,3 +86,52 @@ def validar_producto(formulario) -> tuple[dict, dict[str, str]]:
     }
 
     return datos, errores
+
+
+RAZON_SOCIAL_MAX = 150
+DOCUMENTO_MAX = 20
+EMAIL_MAX = 150
+
+
+def validar_cliente(formulario) -> tuple[dict, dict[str, str]]:
+    """Valida el formulario de cliente.
+
+    Devuelve (datos_limpios, errores), igual que `validar_producto`.
+    """
+    errores: dict[str, str] = {}
+
+    razon_social = (formulario.get("razon_social") or "").strip()
+    documento = (formulario.get("documento") or "").strip()
+    email = (formulario.get("email") or "").strip()
+    telefono = (formulario.get("telefono") or "").strip()
+    direccion = (formulario.get("direccion") or "").strip()
+
+    # --- Razón social: lo único realmente obligatorio ---
+    if len(razon_social) < 2:
+        errores["razon_social"] = "Debe tener al menos 2 caracteres"
+    elif len(razon_social) > RAZON_SOCIAL_MAX:
+        errores["razon_social"] = f"No puede superar los {RAZON_SOCIAL_MAX} caracteres"
+
+    # --- Documento: opcional, pero si viene tiene que ser plausible ---
+    if documento:
+        if len(documento) > DOCUMENTO_MAX:
+            errores["documento"] = f"No puede superar los {DOCUMENTO_MAX} caracteres"
+        elif not all(caracter.isdigit() or caracter == "-" for caracter in documento):
+            errores["documento"] = "Solo números y guiones (ej: 30-71234567-8)"
+
+    # --- Email: validación mínima, sin pretender cubrir el RFC entero ---
+    if email:
+        if len(email) > EMAIL_MAX:
+            errores["email"] = f"No puede superar los {EMAIL_MAX} caracteres"
+        elif "@" not in email or "." not in email.split("@")[-1]:
+            errores["email"] = "No parece una dirección de correo válida"
+
+    datos = {
+        "razon_social": razon_social,
+        "documento": documento or None,
+        "email": email or None,
+        "telefono": telefono or None,
+        "direccion": direccion or None,
+    }
+
+    return datos, errores

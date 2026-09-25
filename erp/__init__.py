@@ -22,9 +22,10 @@ def crear_app(config=Config) -> Flask:
     # Los modelos se importan acá para que SQLAlchemy los registre antes de
     # crear las tablas.
     from erp import modelos  # noqa: F401
-    from erp.vistas import productos
+    from erp.vistas import clientes, productos
 
     app.register_blueprint(productos.bp)
+    app.register_blueprint(clientes.bp)
 
     @app.get("/")
     def inicio():

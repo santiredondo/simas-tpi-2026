@@ -76,6 +76,7 @@ erp/
   validaciones.py    validación de formularios
   vistas/
     productos.py     CRUD de productos (blueprint)
+    clientes.py      CRUD de clientes (blueprint)
   templates/         plantillas Jinja2
   static/            estilos
 docs/                modelado de procesos, diseño y decisiones técnicas
@@ -95,7 +96,7 @@ semillas.py          datos de ejemplo
 | Checkpoint 4 — script MariaDB del flujo de venta | ✅ [sql/erp_ventas_mariadb.sql](sql/erp_ventas_mariadb.sql) |
 | Workshop 3 · Checkpoint 1 — campos y pantallas | ✅ [docs/crud-productos-diseno.md](docs/crud-productos-diseno.md) |
 | Workshop 3 — CRUD de Productos | ✅ |
-| Módulo de clientes | ⬜ |
+| Módulo de clientes | ✅ |
 | Registro de compras y ventas | ⬜ |
 | Administración de usuarios | ⬜ |
 | IA — sugerencia de reposición | ⬜ |

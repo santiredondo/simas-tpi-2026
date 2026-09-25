@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ titulo }} · ERP grupo21{% endblock %}
+
+{% macro campo(nombre, etiqueta, tipo="text", extra="") %}
+  <div class="campo">
+    <label for="{{ nombre }}">{{ etiqueta }}</label>
+    <input type="{{ tipo }}" id="{{ nombre }}" name="{{ nombre }}"
+           value="{{ valores.get(nombre, '') }}"
+           class="{{ 'con-error' if errores.get(nombre) }}" {{ extra|safe }}>
+    {% if errores.get(nombre) %}
+      <p class="error">⚠ {{ errores[nombre] }}</p>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{% block contenido %}
+  <nav class="miga">
+    <a href="{{ url_for('clientes.listar') }}">Clientes</a> / {{ titulo }}
+  </nav>
+
+  <h1>{{ titulo }}</h1>
+
+  {% if errores %}
+    <p class="aviso aviso--error">Revisá los campos marcados.</p>
+  {% endif %}
+
+  <form class="formulario" method="post" novalidate>
+    {{ campo("razon_social", "Razón social *", extra='maxlength="150" required') }}
+
+    <div class="fila">
+      {{ campo("documento", "CUIT / DNI", extra='placeholder="30-71234567-8" maxlength="20"') }}
+      {{ campo("telefono", "Teléfono", extra='maxlength="30"') }}
+    </div>
+
+    <div class="fila">
+      {{ campo("email", "Email", tipo="email", extra='maxlength="150"') }}
+      {{ campo("direccion", "Dirección", extra='maxlength="200"') }}
+    </div>
+
+    <div class="acciones-form">
+      <button class="boton boton--primario" type="submit">{{ etiqueta_boton }}</button>
+      <a class="cancelar" href="{{ url_for('clientes.listar') }}">Cancelar</a>
+    </div>
+  </form>
+
+  {% if cliente %}
+    <p class="sutil pie-dato">
+      Última modificación: {{ cliente.actualizado_en.strftime('%d/%m/%Y %H:%M') }}
+    </p>
+  {% endif %}
+{% endblock %}

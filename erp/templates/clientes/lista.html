@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block titulo %}Clientes · ERP grupo21{% endblock %}
+
+{% block contenido %}
+  <div class="encabezado">
+    <div>
+      <h1>Clientes</h1>
+      <p class="sutil">
+        {{ clientes|length }} cliente{{ '' if clientes|length == 1 else 's' }}
+        {{ 'en total (incluye dados de baja)' if ver == 'todos' else 'activos' }}
+      </p>
+    </div>
+    <a class="boton boton--primario" href="{{ url_for('clientes.crear') }}">+ Nuevo cliente</a>
+  </div>
+
+  <form class="filtros" method="get" action="{{ url_for('clientes.listar') }}">
+    <input type="search" name="q" value="{{ texto }}" placeholder="Buscar por razón social, documento o email...">
+    <select name="ver">
+      <option value="activos" {{ 'selected' if ver != 'todos' }}>Solo activos</option>
+      <option value="todos" {{ 'selected' if ver == 'todos' }}>Todos</option>
+    </select>
+    <button class="boton" type="submit">Buscar</button>
+  </form>
+
+  {% if not clientes %}
+    <p class="vacio">
+      {% if texto %}
+        No hay clientes que coincidan con "{{ texto }}".
+      {% else %}
+        Todavía no hay clientes cargados.
+      {% endif %}
+    </p>
+  {% else %}
+    <div class="tabla-scroll">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Razón social</th>
+            <th>Documento</th>
+            <th>Contacto</th>
+            <th>Estado</th>
+            <th class="der">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cliente in clientes %}
+            <tr class="{{ '' if cliente.activo else 'inactivo' }}">
+              <td>
+                <strong>{{ cliente.razon_social }}</strong>
+                {% if cliente.direccion %}
+                  <span class="sutil bloque">{{ cliente.direccion }}</span>
+                {% endif %}
+              </td>
+              <td class="mono">{{ cliente.documento or '—' }}</td>
+              <td>
+                {{ cliente.email or '—' }}
+                {% if cliente.telefono %}
+                  <span class="sutil bloque">{{ cliente.telefono }}</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if cliente.activo %}
+                  <span class="etiqueta etiqueta--verde">Activo</span>
+                {% else %}
+                  <span class="etiqueta etiqueta--gris">Dado de baja</span>
+                {% endif %}
+              </td>
+              <td class="der acciones">
+                {% if cliente.activo %}
+                  <a href="{{ url_for('clientes.editar', id_cliente=cliente.id) }}">Editar</a>
+                  <a class="peligro" href="{{ url_for('clientes.baja', id_cliente=cliente.id) }}">Dar de baja</a>
+                {% else %}
+                  <form method="post" action="{{ url_for('clientes.reactivar', id_cliente=cliente.id) }}">
+                    <button class="enlace" type="submit">Reactivar</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+{% endblock %}

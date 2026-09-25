@@ -63,3 +63,34 @@ class Producto(db.Model):
 
     def __repr__(self) -> str:
         return f"<Producto {self.codigo} — {self.nombre}>"
+
+
+class Cliente(db.Model):
+    __tablename__ = "cliente"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+
+    razon_social: Mapped[str] = mapped_column(db.String(150), nullable=False)
+    # CUIT o DNI. Opcional (un mostrador no siempre lo pide), pero si se carga
+    # no puede repetirse: dos fichas del mismo cliente ensucian el historial.
+    documento: Mapped[str | None] = mapped_column(db.String(20), unique=True)
+    email: Mapped[str | None] = mapped_column(db.String(150))
+    telefono: Mapped[str | None] = mapped_column(db.String(30))
+    direccion: Mapped[str | None] = mapped_column(db.String(200))
+
+    # Baja lógica, por el mismo motivo que en Producto: las ventas históricas
+    # apuntan al cliente y no pueden quedar huérfanas.
+    activo: Mapped[bool] = mapped_column(db.Boolean, nullable=False, default=True)
+
+    creado_en: Mapped[datetime] = mapped_column(db.DateTime, default=ahora)
+    actualizado_en: Mapped[datetime] = mapped_column(
+        db.DateTime, default=ahora, onupdate=ahora
+    )
+
+    __table_args__ = (
+        db.Index("idx_cliente_activo", "activo"),
+        db.Index("idx_cliente_razon", "razon_social"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<Cliente {self.razon_social}>"
