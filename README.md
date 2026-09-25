@@ -95,6 +95,7 @@ semillas.py          datos de ejemplo
 | Modelado de procesos | ✅ [docs/modelado-de-procesos.md](docs/modelado-de-procesos.md) |
 | Checkpoint 4 — script MariaDB del flujo de venta | ✅ [sql/erp_ventas_mariadb.sql](sql/erp_ventas_mariadb.sql) |
 | Workshop 3 · Checkpoint 1 — campos y pantallas | ✅ [docs/crud-productos-diseno.md](docs/crud-productos-diseno.md) |
+| Workshop 3 · Checkpoint 2 — CRUD generado e iterado | ✅ [docs/crud-productos-iteracion.md](docs/crud-productos-iteracion.md) |
 | Workshop 3 — CRUD de Productos | ✅ |
 | Módulo de clientes | ✅ |
 | Registro de compras y ventas | ⬜ |
