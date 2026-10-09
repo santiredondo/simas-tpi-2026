@@ -135,3 +135,62 @@ def validar_cliente(formulario) -> tuple[dict, dict[str, str]]:
     }
 
     return datos, errores
+
+
+NOMBRE_USUARIO_MAX = 100
+
+
+def validar_usuario(formulario, es_alta: bool = True) -> tuple[dict, dict[str, str]]:
+    """Valida el formulario de usuario.
+
+    En el alta la contraseña es obligatoria. Al editar es opcional: si se deja
+    vacía, se conserva la que ya tenía (no se la puede "leer" para precargarla,
+    porque solo existe su hash).
+    """
+    from erp.seguridad import LARGO_MINIMO_CONTRASENA
+
+    errores: dict[str, str] = {}
+
+    nombre = (formulario.get("nombre") or "").strip()
+    email = (formulario.get("email") or "").strip().lower()
+    contrasena = formulario.get("contrasena") or ""
+    repetir = formulario.get("repetir_contrasena") or ""
+    rol_id = (formulario.get("rol_id") or "").strip()
+
+    # --- Nombre ---
+    if len(nombre) < 2:
+        errores["nombre"] = "El nombre debe tener al menos 2 caracteres"
+    elif len(nombre) > NOMBRE_USUARIO_MAX:
+        errores["nombre"] = f"No puede superar los {NOMBRE_USUARIO_MAX} caracteres"
+
+    # --- Email: es el usuario de ingreso, así que acá sí es obligatorio ---
+    if not email:
+        errores["email"] = "El email es obligatorio"
+    elif "@" not in email or "." not in email.split("@")[-1]:
+        errores["email"] = "No parece una dirección de correo válida"
+    elif len(email) > EMAIL_MAX:
+        errores["email"] = f"No puede superar los {EMAIL_MAX} caracteres"
+
+    # --- Rol ---
+    if not rol_id.isdigit():
+        errores["rol_id"] = "Elegí un rol"
+
+    # --- Contraseña ---
+    if es_alta or contrasena or repetir:
+        if len(contrasena) < LARGO_MINIMO_CONTRASENA:
+            errores["contrasena"] = (
+                f"Debe tener al menos {LARGO_MINIMO_CONTRASENA} caracteres"
+            )
+        elif contrasena != repetir:
+            errores["repetir_contrasena"] = "Las contraseñas no coinciden"
+
+    datos = {
+        "nombre": nombre,
+        "email": email,
+        "rol_id": int(rol_id) if rol_id.isdigit() else None,
+        # Se devuelve en texto plano solo para hashearla de inmediato en la
+        # vista; nunca se guarda ni se registra así.
+        "contrasena": contrasena,
+    }
+
+    return datos, errores

@@ -13,7 +13,18 @@
       <a href="{{ url_for('productos.listar') }}">Productos</a>
       <a href="{{ url_for('clientes.listar') }}">Clientes</a>
       <a href="{{ url_for('ventas.listar') }}">Ventas</a>
+      {% if g.usuario and g.usuario.rol.nombre == 'ADMINISTRADOR' %}
+        <a href="{{ url_for('usuarios.listar') }}">Usuarios</a>
+      {% endif %}
     </nav>
+    {% if g.usuario %}
+      <div class="sesion">
+        <span class="sutil">{{ g.usuario.nombre }} · {{ g.usuario.rol.nombre|capitalize }}</span>
+        <form method="post" action="{{ url_for('auth.logout') }}">
+          <button class="enlace" type="submit">Salir</button>
+        </form>
+      </div>
+    {% endif %}
   </header>
 
   <main class="contenido">

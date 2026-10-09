@@ -63,6 +63,13 @@ python run.py
 
 Abrir http://localhost:5000
 
+**Usuarios de prueba** (cambiar estas contraseñas):
+
+| Email | Contraseña | Rol |
+| --- | --- | --- |
+| `admin@grupo21.test` | `admin1234` | Administrador |
+| `vendedor@grupo21.test` | `vendedor1234` | Vendedor |
+
 ---
 
 ## Estructura
@@ -75,10 +82,13 @@ erp/
   modelos.py         modelos de datos
   validaciones.py    validación de formularios
   servicios.py       reglas de negocio de ventas (stock, confirmación, anulación)
+  seguridad.py       hash de contraseñas, sesión y control de acceso por rol
   vistas/
     productos.py     CRUD de productos (blueprint)
     clientes.py      CRUD de clientes (blueprint)
     ventas.py        registro de ventas (blueprint)
+    usuarios.py      CRUD de usuarios (blueprint, solo administradores)
+    auth.py          ingreso y salida del sistema
   templates/         plantillas Jinja2
   static/            estilos
 docs/                modelado de procesos, diseño y decisiones técnicas
@@ -102,5 +112,6 @@ semillas.py          datos de ejemplo
 | Módulo de clientes | ✅ |
 | Registro de ventas (con descuento de stock) | ✅ |
 | Registro de compras | ⬜ |
-| Administración de usuarios | ⬜ |
+| Workshop 4 · Checkpoint 1 — campos de usuario y autenticación | ✅ [docs/usuarios-y-autenticacion.md](docs/usuarios-y-autenticacion.md) |
+| Administración de usuarios + login | ✅ |
 | IA — sugerencia de reposición | ⬜ |

@@ -22,11 +22,35 @@ def crear_app(config=Config) -> Flask:
     # Los modelos se importan acá para que SQLAlchemy los registre antes de
     # crear las tablas.
     from erp import modelos  # noqa: F401
-    from erp.vistas import clientes, productos, ventas
+    from erp.vistas import auth, clientes, productos, usuarios, ventas
 
+    app.register_blueprint(auth.bp)
     app.register_blueprint(productos.bp)
     app.register_blueprint(clientes.bp)
     app.register_blueprint(ventas.bp)
+    app.register_blueprint(usuarios.bp)
+
+    from erp.seguridad import cargar_usuario_actual
+
+    # Rutas que se pueden ver sin haber iniciado sesión.
+    PUBLICAS = {"auth.login", "static"}
+
+    @app.before_request
+    def exigir_sesion():
+        """Puerta de entrada única: todo pide sesión salvo lo listado arriba.
+
+        Proteger vista por vista es frágil; alcanza con olvidarse un
+        decorador para dejar una puerta abierta.
+        """
+        from flask import g, redirect, request, url_for
+
+        cargar_usuario_actual()
+
+        if request.endpoint in PUBLICAS:
+            return None
+        if g.usuario is None:
+            return redirect(url_for("auth.login", siguiente=request.path))
+        return None
 
     @app.get("/")
     def inicio():

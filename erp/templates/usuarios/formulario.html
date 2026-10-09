@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ titulo }} · ERP grupo21{% endblock %}
+
+{% macro campo(nombre, etiqueta, tipo="text", extra="") %}
+  <div class="campo">
+    <label for="{{ nombre }}">{{ etiqueta }}</label>
+    <input type="{{ tipo }}" id="{{ nombre }}" name="{{ nombre }}"
+           value="{{ valores.get(nombre, '') if tipo != 'password' else '' }}"
+           class="{{ 'con-error' if errores.get(nombre) }}" {{ extra|safe }}>
+    {% if errores.get(nombre) %}
+      <p class="error">⚠ {{ errores[nombre] }}</p>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{% block contenido %}
+  <nav class="miga">
+    <a href="{{ url_for('usuarios.listar') }}">Usuarios</a> / {{ titulo }}
+  </nav>
+
+  <h1>{{ titulo }}</h1>
+
+  {% if errores %}
+    <p class="aviso aviso--error">Revisá los campos marcados.</p>
+  {% endif %}
+
+  <form class="formulario" method="post" novalidate>
+    {{ campo("nombre", "Nombre y apellido *", extra='maxlength="100" required') }}
+
+    <div class="fila">
+      {{ campo("email", "Email *", tipo="email", extra='autocomplete="off" maxlength="150" required') }}
+
+      <div class="campo">
+        <label for="rol_id">Rol *</label>
+        <select id="rol_id" name="rol_id" class="{{ 'con-error' if errores.get('rol_id') }}" required>
+          <option value="">Elegí un rol...</option>
+          {% for rol in roles %}
+            <option value="{{ rol.id }}"
+              {{ 'selected' if valores.get('rol_id')|string == rol.id|string }}>
+              {{ rol.nombre|capitalize }}{% if rol.descripcion %} — {{ rol.descripcion }}{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+        {% if errores.get('rol_id') %}
+          <p class="error">⚠ {{ errores['rol_id'] }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <fieldset class="bloque-contrasena">
+      <legend>
+        {% if usuario %}Cambiar contraseña{% else %}Contraseña{% endif %}
+      </legend>
+      {% if usuario %}
+        <p class="sutil">
+          Dejá estos campos vacíos para conservar la contraseña actual.
+          La contraseña guardada no se puede mostrar: solo existe su hash.
+        </p>
+      {% endif %}
+
+      <div class="fila">
+        {{ campo("contrasena", "Contraseña", tipo="password", extra='autocomplete="new-password" minlength="8"') }}
+        {{ campo("repetir_contrasena", "Repetir contraseña", tipo="password", extra='autocomplete="new-password" minlength="8"') }}
+      </div>
+      <p class="sutil">Mínimo 8 caracteres.</p>
+    </fieldset>
+
+    <div class="acciones-form">
+      <button class="boton boton--primario" type="submit">{{ etiqueta_boton }}</button>
+      <a class="cancelar" href="{{ url_for('usuarios.listar') }}">Cancelar</a>
+    </div>
+  </form>
+
+  {% if usuario %}
+    <p class="sutil pie-dato">
+      Alta: {{ usuario.fecha_alta.strftime('%d/%m/%Y') }} ·
+      Último acceso: {{ usuario.ultimo_acceso.strftime('%d/%m/%Y %H:%M') if usuario.ultimo_acceso else 'nunca' }}
+    </p>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block titulo %}Usuarios · ERP grupo21{% endblock %}
+
+{% block contenido %}
+  <div class="encabezado">
+    <div>
+      <h1>Usuarios</h1>
+      <p class="sutil">
+        {{ usuarios|length }} usuario{{ '' if usuarios|length == 1 else 's' }}
+        {{ 'en total (incluye dados de baja)' if ver == 'todos' else 'activos' }}
+      </p>
+    </div>
+    <a class="boton boton--primario" href="{{ url_for('usuarios.crear') }}">+ Nuevo usuario</a>
+  </div>
+
+  <form class="filtros" method="get" action="{{ url_for('usuarios.listar') }}">
+    <input type="search" name="q" value="{{ texto }}" placeholder="Buscar por nombre o email...">
+    <select name="ver">
+      <option value="activos" {{ 'selected' if ver != 'todos' }}>Solo activos</option>
+      <option value="todos" {{ 'selected' if ver == 'todos' }}>Todos</option>
+    </select>
+    <button class="boton" type="submit">Buscar</button>
+  </form>
+
+  {% if not usuarios %}
+    <p class="vacio">
+      {% if texto %}No hay usuarios que coincidan con "{{ texto }}".
+      {% else %}Todavía no hay usuarios cargados.{% endif %}
+    </p>
+  {% else %}
+    <div class="tabla-scroll">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Último acceso</th>
+            <th>Estado</th>
+            <th class="der">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for usuario in usuarios %}
+            <tr class="{{ '' if usuario.activo else 'inactivo' }}">
+              <td>
+                <strong>{{ usuario.nombre }}</strong>
+                {% if usuario.id == g.usuario.id %}
+                  <span class="sutil">(vos)</span>
+                {% endif %}
+              </td>
+              <td class="mono">{{ usuario.email }}</td>
+              <td>
+                <span class="etiqueta etiqueta--azul">{{ usuario.rol.nombre|capitalize }}</span>
+              </td>
+              <td class="sutil">
+                {{ usuario.ultimo_acceso.strftime('%d/%m/%Y %H:%M') if usuario.ultimo_acceso else 'Nunca ingresó' }}
+              </td>
+              <td>
+                {% if usuario.activo %}
+                  <span class="etiqueta etiqueta--verde">Activo</span>
+                {% else %}
+                  <span class="etiqueta etiqueta--gris">Dado de baja</span>
+                {% endif %}
+              </td>
+              <td class="der acciones">
+                <a href="{{ url_for('usuarios.editar', id_usuario=usuario.id) }}">Editar</a>
+                {% if usuario.activo %}
+                  {% if usuario.id != g.usuario.id %}
+                    <a class="peligro" href="{{ url_for('usuarios.baja', id_usuario=usuario.id) }}">Dar de baja</a>
+                  {% endif %}
+                {% else %}
+                  <form method="post" action="{{ url_for('usuarios.reactivar', id_usuario=usuario.id) }}">
+                    <button class="enlace" type="submit">Reactivar</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+
+  <p class="sutil" style="margin-top:1.25rem">
+    Las contraseñas se guardan hasheadas con scrypt: ni los administradores
+    pueden verlas. Para dar una nueva, se escribe desde "Editar".
+  </p>
+{% endblock %}

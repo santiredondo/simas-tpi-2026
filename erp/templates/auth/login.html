@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ingresar · ERP grupo21</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
+</head>
+<body class="pantalla-login">
+  <main class="tarjeta-login">
+    <h1>ERP grupo21</h1>
+    <p class="sutil">Ingresá con tu cuenta para continuar.</p>
+
+    {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
+      <p class="aviso aviso--{{ categoria }}">{{ mensaje }}</p>
+    {% endfor %}
+
+    {% if error %}
+      <p class="aviso aviso--error">{{ error }}</p>
+    {% endif %}
+
+    <form method="post">
+      <input type="hidden" name="siguiente" value="{{ siguiente }}">
+
+      <div class="campo">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" value="{{ email }}"
+               autocomplete="username" required autofocus>
+      </div>
+
+      <div class="campo">
+        <label for="contrasena">Contraseña</label>
+        <input type="password" id="contrasena" name="contrasena"
+               autocomplete="current-password" required>
+      </div>
+
+      <button class="boton boton--primario boton--ancho" type="submit">Ingresar</button>
+    </form>
+  </main>
+</body>
+</html>

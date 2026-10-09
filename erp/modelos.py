@@ -205,3 +205,58 @@ class MovimientoStock(db.Model):
         CheckConstraint("cantidad > 0", name="chk_movimiento_cantidad"),
         db.Index("idx_movimiento_producto_fecha", "producto_id", "fecha"),
     )
+
+
+# ---------------------------------------------------------------------------
+# Usuarios y acceso al sistema
+# ---------------------------------------------------------------------------
+
+class Rol(db.Model):
+    """Los permisos se asignan al rol, no a cada persona.
+
+    Así, cambiar lo que puede hacer un puesto no obliga a modificar usuario
+    por usuario.
+    """
+
+    __tablename__ = "rol"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    nombre: Mapped[str] = mapped_column(db.String(50), nullable=False, unique=True)
+    descripcion: Mapped[str | None] = mapped_column(db.String(200))
+
+    usuarios: Mapped[list["Usuario"]] = relationship(back_populates="rol")
+
+    def __repr__(self) -> str:
+        return f"<Rol {self.nombre}>"
+
+
+class Usuario(db.Model):
+    __tablename__ = "usuario"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    nombre: Mapped[str] = mapped_column(db.String(100), nullable=False)
+    # El email es el usuario de ingreso: por eso es único y obligatorio.
+    email: Mapped[str] = mapped_column(db.String(150), nullable=False, unique=True)
+
+    # NUNCA se guarda la contraseña en texto plano: solo su hash.
+    # 255 caracteres porque el algoritmo guarda método, salt y digest juntos.
+    contrasena_hash: Mapped[str] = mapped_column(db.String(255), nullable=False)
+
+    rol_id: Mapped[int] = mapped_column(
+        db.ForeignKey("rol.id", ondelete="RESTRICT"), nullable=False
+    )
+    rol: Mapped["Rol"] = relationship(back_populates="usuarios")
+
+    # Baja lógica: las ventas y movimientos registran quién los hizo, así que
+    # un usuario no puede desaparecer sin dejar huérfano ese historial.
+    activo: Mapped[bool] = mapped_column(db.Boolean, nullable=False, default=True)
+    fecha_alta: Mapped[datetime] = mapped_column(db.DateTime, default=ahora)
+    ultimo_acceso: Mapped[datetime | None] = mapped_column(db.DateTime)
+
+    __table_args__ = (
+        db.Index("idx_usuario_activo", "activo"),
+        db.Index("idx_usuario_rol", "rol_id"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<Usuario {self.email}>"

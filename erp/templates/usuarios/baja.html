@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block titulo %}Dar de baja · ERP grupo21{% endblock %}
+
+{% block contenido %}
+  <nav class="miga">
+    <a href="{{ url_for('usuarios.listar') }}">Usuarios</a> / Dar de baja
+  </nav>
+
+  <div class="confirmacion">
+    <h1>¿Dar de baja este usuario?</h1>
+
+    <p class="producto-resumen">
+      <strong>{{ usuario.nombre }}</strong><br>
+      <span class="sutil">{{ usuario.email }} · {{ usuario.rol.nombre|capitalize }}</span>
+    </p>
+
+    <p class="sutil">
+      No va a poder volver a ingresar al sistema, y si tiene una sesión abierta
+      se le cierra en el próximo pedido. <strong>No se borra</strong>: las
+      operaciones que registró conservan su autor y se puede reactivar.
+    </p>
+
+    <form method="post" class="acciones-form">
+      <button class="boton boton--peligro" type="submit">Sí, dar de baja</button>
+      <a class="cancelar" href="{{ url_for('usuarios.listar') }}">Cancelar</a>
+    </form>
+  </div>
+{% endblock %}
