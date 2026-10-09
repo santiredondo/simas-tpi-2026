@@ -63,12 +63,17 @@ python run.py
 
 Abrir http://localhost:5000
 
-**Usuarios de prueba** (cambiar estas contraseñas):
+**Usuarios de desarrollo** — uno por integrante. Los crea `semillas.py`:
 
-| Email | Contraseña | Rol |
-| --- | --- | --- |
-| `admin@grupo21.test` | `admin1234` | Administrador |
-| `vendedor@grupo21.test` | `vendedor1234` | Vendedor |
+| Integrante | Email | Contraseña | Rol |
+| --- | --- | --- | --- |
+| Santiago | `santiago@grupo21.test` | `grupo21.santiago` | Administrador |
+| Lautaro | `lautaro@grupo21.test` | `grupo21.lautaro` | Vendedor |
+| David | `david@grupo21.test` | `grupo21.david` | Comprador |
+
+> Son credenciales **de desarrollo local**, pensadas para probar el sistema en
+> la máquina de cada uno. Si algún día esto se publica en internet, hay que
+> cambiarlas: están escritas en un archivo del repositorio.
 
 ---
 

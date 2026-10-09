@@ -33,8 +33,9 @@ ROLES = [
 # Usuarios iniciales. Las contraseñas son de desarrollo y DEBEN cambiarse:
 # el sistema obliga a cargarlas de nuevo porque solo guarda su hash.
 USUARIOS = [
-    ("Administrador", "admin@grupo21.test", "ADMINISTRADOR", "admin1234"),
-    ("Vendedor de prueba", "vendedor@grupo21.test", "VENDEDOR", "vendedor1234"),
+    ("Santiago Redondo", "santiago@grupo21.test", "ADMINISTRADOR", "grupo21.santiago"),
+    ("Lautaro Rizzi", "lautaro@grupo21.test", "VENDEDOR", "grupo21.lautaro"),
+    ("David Bustamante", "david@grupo21.test", "COMPRADOR", "grupo21.david"),
 ]
 
 
