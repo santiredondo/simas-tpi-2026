@@ -217,3 +217,43 @@ vendedor@grupo21.test   scrypt:32768:8:1$EBWo2RPmHGQnCvSv$4ca9364574e   162
 ```
 
 Ninguna contraseña aparece en texto plano, y los salts son distintos.
+
+---
+
+## 8. Los cinco pilares del flujo de autenticación
+
+| Pilar | Qué significa | Cómo está resuelto |
+| --- | --- | --- |
+| **Autenticación** | Verificar que el usuario es quien dice ser | Login con email + contraseña, verificada contra el hash. Mensaje de error genérico para no revelar qué cuentas existen |
+| **Autorización** | Determinar qué puede hacer según su rol | Tabla `rol` + decorador `rol_requerido`. `/usuarios` es exclusivo de ADMINISTRADOR, validado **en el servidor** |
+| **Sesión** | Mantener el estado del usuario autenticado | Cookie firmada por Flask con el `id` del usuario. El permiso se revalida en cada pedido contra la base |
+| **Cifrado y hashing** | No guardar contraseñas en texto plano | scrypt con salt aleatorio por usuario. La cookie viaja como `HttpOnly` y `SameSite=Lax` |
+| **Caducidad y cierre de sesión** | Evitar que alguien use un login abandonado | La sesión vence a los **30 minutos de inactividad** (configurable). El plazo se renueva con cada pedido. Botón "Salir" que la invalida |
+
+### El ejemplo de la consigna, resuelto
+
+> *"Si un operador intenta ingresar al panel de administración → el sistema debe bloquearlo."*
+
+Es exactamente la prueba 8 de la verificación. Un usuario con rol VENDEDOR que escribe `/usuarios/` a mano en la barra del navegador recibe un `302` hacia el listado de productos y el mensaje *"No tenés permisos para esa sección"*.
+
+**El link no aparece en su barra de navegación, pero eso es cosmética.** Lo que lo bloquea de verdad es la validación del servidor: esconder un botón no es seguridad, porque la URL se puede escribir a mano, guardar en favoritos o recibir por mensaje.
+
+### Por qué la caducidad cuenta la inactividad y no el tiempo total
+
+Si venciera a las 8 horas de conectado, a alguien se le cortaría la sesión en mitad de una carga. Si vence a los 30 minutos **sin actividad**, el que está trabajando no se entera, y la máquina del depósito que quedó abierta deja de ser un problema.
+
+```
+   login ──[trabaja]──[trabaja]──[trabaja]──────────────── 30 min sin tocar nada ──> caduca
+            ↑ cada pedido renueva el plazo
+```
+
+Verificado con `prueba_caducidad.py`, que levanta la aplicación con una sesión de 2 segundos: sin actividad caduca, con actividad constante se mantiene viva.
+
+### Protecciones de la cookie
+
+| Atributo | Para qué |
+| --- | --- |
+| **Firmada** | El navegador no puede editarla para hacerse pasar por otro usuario |
+| **HttpOnly** | JavaScript no puede leerla: aunque se cuele un script, no roba la sesión |
+| **SameSite=Lax** | No se envía en pedidos que vienen de otro sitio: frena los CSRF más simples |
+| **Secure** | Solo viaja por HTTPS (se activa al publicar; en local se usa http) |
