@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block titulo %}Contraseña provisoria · ERP grupo21{% endblock %}
+
+{% block contenido %}
+  <div class="confirmacion">
+    <h1>Contraseña provisoria generada</h1>
+
+    <p>Para <strong>{{ usuario.nombre }}</strong> ({{ usuario.email }}):</p>
+
+    <p class="provisoria">{{ provisoria }}</p>
+
+    <p class="aviso aviso--error">
+      Esta contraseña se muestra <strong>una sola vez</strong>. En la base solo
+      queda su hash, así que ni vos ni nadie puede volver a consultarla: si se
+      pierde, hay que generar otra.
+    </p>
+
+    <p class="sutil">
+      Entregásela a la persona en mano o por teléfono. En cuanto ingrese, el
+      sistema la obliga a elegir una contraseña propia, de modo que vos no
+      terminás conociendo la definitiva de nadie.
+    </p>
+
+    <div class="acciones-form">
+      <a class="boton boton--primario" href="{{ url_for('usuarios.solicitudes') }}">
+        Volver a solicitudes
+      </a>
+    </div>
+  </div>
+{% endblock %}

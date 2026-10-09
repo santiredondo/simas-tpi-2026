@@ -26,6 +26,7 @@
   {% endif %}
 
   <form class="formulario" method="post" novalidate>
+  {{ campo_csrf() }}
     {{ campo("razon_social", "Razón social *", extra='maxlength="150" required') }}
 
     <div class="fila">

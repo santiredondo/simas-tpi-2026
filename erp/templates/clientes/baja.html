@@ -25,6 +25,7 @@
     </p>
 
     <form method="post" class="acciones-form">
+  {{ campo_csrf() }}
       <button class="boton boton--peligro" type="submit">Sí, dar de baja</button>
       <a class="cancelar" href="{{ url_for('clientes.listar') }}">Cancelar</a>
     </form>

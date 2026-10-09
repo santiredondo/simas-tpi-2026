@@ -26,6 +26,7 @@
   {% endif %}
 
   <form class="formulario" method="post" novalidate>
+  {{ campo_csrf() }}
     <div class="fila">
       {{ campo("codigo", "Código *", extra='placeholder="PRD-006" maxlength="30" required') }}
 

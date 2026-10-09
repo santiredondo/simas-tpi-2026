@@ -72,6 +72,7 @@
                   {% endif %}
                 {% else %}
                   <form method="post" action="{{ url_for('usuarios.reactivar', id_usuario=usuario.id) }}">
+  {{ campo_csrf() }}
                     <button class="enlace" type="submit">Reactivar</button>
                   </form>
                 {% endif %}

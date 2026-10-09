@@ -15,12 +15,15 @@
       <a href="{{ url_for('ventas.listar') }}">Ventas</a>
       {% if g.usuario and g.usuario.rol.nombre == 'ADMINISTRADOR' %}
         <a href="{{ url_for('usuarios.listar') }}">Usuarios</a>
+        <a href="{{ url_for('usuarios.solicitudes') }}">Solicitudes</a>
       {% endif %}
     </nav>
     {% if g.usuario %}
       <div class="sesion">
-        <span class="sutil">{{ g.usuario.nombre }} · {{ g.usuario.rol.nombre|capitalize }}</span>
+        <a class="sutil" href="{{ url_for('auth.cambiar_contrasena') }}"
+           title="Cambiar mi contraseña">{{ g.usuario.nombre }} · {{ g.usuario.rol.nombre|capitalize }}</a>
         <form method="post" action="{{ url_for('auth.logout') }}">
+  {{ campo_csrf() }}
           <button class="enlace" type="submit">Salir</button>
         </form>
       </div>

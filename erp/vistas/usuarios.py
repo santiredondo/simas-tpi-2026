@@ -8,8 +8,8 @@ from flask import Blueprint, flash, g, redirect, render_template, request, url_f
 from sqlalchemy import or_, select
 
 from erp.extensiones import db
-from erp.modelos import Rol, Usuario
-from erp.seguridad import hashear_contrasena, rol_requerido
+from erp.modelos import Rol, SolicitudRestablecimiento, Usuario, ahora
+from erp.seguridad import generar_contrasena_provisoria, hashear_contrasena, rol_requerido
 from erp.validaciones import validar_usuario
 
 bp = Blueprint("usuarios", __name__, url_prefix="/usuarios")
@@ -204,3 +204,61 @@ def reactivar(id_usuario: int):
 
     flash(f"Usuario {usuario.email} reactivado.", "exito")
     return redirect(url_for("usuarios.listar", ver="todos"))
+
+
+# ---------------------------------------------------------------------------
+# Solicitudes de restablecimiento de contraseña
+# ---------------------------------------------------------------------------
+@bp.get("/solicitudes")
+def solicitudes():
+    pendientes = db.session.scalars(
+        select(SolicitudRestablecimiento)
+        .where(SolicitudRestablecimiento.atendida.is_(False))
+        .order_by(SolicitudRestablecimiento.fecha)
+    ).all()
+
+    atendidas = db.session.scalars(
+        select(SolicitudRestablecimiento)
+        .where(SolicitudRestablecimiento.atendida.is_(True))
+        .order_by(SolicitudRestablecimiento.atendida_en.desc())
+        .limit(10)
+    ).all()
+
+    return render_template(
+        "usuarios/solicitudes.html", pendientes=pendientes, atendidas=atendidas
+    )
+
+
+@bp.post("/solicitudes/<int:id_solicitud>/resolver")
+def resolver_solicitud(id_solicitud: int):
+    """Asigna una contraseña provisoria y marca la solicitud como atendida.
+
+    La contraseña se muestra UNA sola vez, para que el administrador se la
+    entregue a la persona por un canal fuera del sistema. No queda guardada en
+    claro en ningún lado, y nace marcada como provisoria: el usuario está
+    obligado a cambiarla en su primer ingreso.
+    """
+    solicitud = db.get_or_404(SolicitudRestablecimiento, id_solicitud)
+
+    if solicitud.atendida or solicitud.usuario is None:
+        flash("Esa solicitud ya no está pendiente.", "error")
+        return redirect(url_for("usuarios.solicitudes"))
+
+    provisoria = generar_contrasena_provisoria()
+
+    usuario = solicitud.usuario
+    usuario.contrasena_hash = hashear_contrasena(provisoria)
+    usuario.debe_cambiar_contrasena = True
+    # El restablecimiento también levanta el bloqueo por intentos fallidos.
+    usuario.intentos_fallidos = 0
+    usuario.bloqueado_hasta = None
+
+    solicitud.atendida = True
+    solicitud.atendida_en = ahora()
+    solicitud.atendida_por_id = g.usuario.id
+
+    db.session.commit()
+
+    return render_template(
+        "usuarios/provisoria.html", usuario=usuario, provisoria=provisoria
+    )

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block titulo %}Cambiar contraseña · ERP grupo21{% endblock %}
+
+{% block contenido %}
+  <h1>Cambiar contraseña</h1>
+
+  {% if g.usuario.debe_cambiar_contrasena %}
+    <p class="aviso aviso--error">
+      Tu contraseña actual es provisoria: la asignó un administrador. Antes de
+      usar el sistema tenés que elegir una propia, que nadie más conozca.
+    </p>
+  {% endif %}
+
+  <form class="formulario" method="post" novalidate>
+    {{ campo_csrf() }}
+
+    <div class="campo">
+      <label for="contrasena_actual">Contraseña actual</label>
+      <input type="password" id="contrasena_actual" name="contrasena_actual"
+             autocomplete="current-password"
+             class="{{ 'con-error' if errores.get('contrasena_actual') }}" required>
+      {% if errores.get('contrasena_actual') %}
+        <p class="error">⚠ {{ errores['contrasena_actual'] }}</p>
+      {% endif %}
+    </div>
+
+    <div class="fila">
+      <div class="campo">
+        <label for="contrasena_nueva">Contraseña nueva</label>
+        <input type="password" id="contrasena_nueva" name="contrasena_nueva"
+               autocomplete="new-password" minlength="8"
+               class="{{ 'con-error' if errores.get('contrasena_nueva') }}" required>
+        {% if errores.get('contrasena_nueva') %}
+          <p class="error">⚠ {{ errores['contrasena_nueva'] }}</p>
+        {% endif %}
+      </div>
+
+      <div class="campo">
+        <label for="repetir_contrasena">Repetir contraseña nueva</label>
+        <input type="password" id="repetir_contrasena" name="repetir_contrasena"
+               autocomplete="new-password" minlength="8"
+               class="{{ 'con-error' if errores.get('repetir_contrasena') }}" required>
+        {% if errores.get('repetir_contrasena') %}
+          <p class="error">⚠ {{ errores['repetir_contrasena'] }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <p class="sutil">
+      Mínimo 8 caracteres. No puede ser tu email ni una de las contraseñas más
+      usadas del mundo.
+    </p>
+
+    <div class="acciones-form">
+      <button class="boton boton--primario" type="submit">Cambiar contraseña</button>
+      {% if not g.usuario.debe_cambiar_contrasena %}
+        <a class="cancelar" href="{{ url_for('productos.listar') }}">Cancelar</a>
+      {% endif %}
+    </div>
+  </form>
+{% endblock %}

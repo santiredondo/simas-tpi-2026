@@ -33,6 +33,7 @@
   {# ---------- Agregar productos: solo mientras es borrador ---------- #}
   {% if venta.editable %}
     <form class="filtros" method="post" action="{{ url_for('ventas.agregar', id_venta=venta.id) }}">
+  {{ campo_csrf() }}
       <select name="producto_id" required>
         <option value="">Elegí un producto...</option>
         {% for producto in productos %}
@@ -76,6 +77,7 @@
                 <td class="der acciones">
                   <form method="post"
                         action="{{ url_for('ventas.quitar', id_venta=venta.id, id_linea=linea.id) }}">
+  {{ campo_csrf() }}
                     <button class="enlace" type="submit">Quitar</button>
                   </form>
                 </td>
@@ -98,6 +100,7 @@
   <div class="acciones-form" style="margin-top:1.25rem">
     {% if venta.estado == 'BORRADOR' %}
       <form method="post" action="{{ url_for('ventas.confirmar', id_venta=venta.id) }}">
+  {{ campo_csrf() }}
         <button class="boton boton--primario" type="submit"
                 {{ 'disabled' if not venta.lineas }}>
           Confirmar venta

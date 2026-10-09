@@ -257,3 +257,153 @@ Verificado con `prueba_caducidad.py`, que levanta la aplicación con una sesión
 | **HttpOnly** | JavaScript no puede leerla: aunque se cuele un script, no roba la sesión |
 | **SameSite=Lax** | No se envía en pedidos que vienen de otro sitio: frena los CSRF más simples |
 | **Secure** | Solo viaja por HTTPS (se activa al publicar; en local se usa http) |
+
+---
+
+## 9. Medidas de seguridad adicionales (Checkpoint 2)
+
+Siete defensas que el equipo decidió sumar, más allá de lo mínimo pedido.
+
+### 9.1 Bloqueo por intentos fallidos
+
+Cinco contraseñas equivocadas seguidas y la cuenta queda bloqueada **15 minutos**. El contador se reinicia con cada ingreso exitoso.
+
+Esto es lo que vuelve inviable el ataque por fuerza bruta: probar un diccionario de un millón de contraseñas, a 5 intentos cada 15 minutos, llevaría más de 50 años.
+
+Durante el bloqueo **no entra ni con la contraseña correcta**, y el aviso sí dice qué pasa: a esa altura el atacante ya sabe que la cuenta existe, y quien lo sufre de verdad necesita entender por qué no puede entrar.
+
+### 9.2 Auditoría de accesos
+
+Cada intento —exitoso o fallido— queda asentado en `intento_acceso` con el email tecleado, el motivo del rechazo, la **IP de origen** y la fecha.
+
+Se guarda el email y no el usuario a propósito: los intentos contra cuentas inexistentes son justamente los que delatan un ataque automatizado.
+
+| Motivo | Qué pasó |
+| --- | --- |
+| `INEXISTENTE` | El email no corresponde a ninguna cuenta |
+| `CONTRASENA` | La cuenta existe, la contraseña no coincide |
+| `INACTIVO` | La cuenta fue dada de baja |
+| `BLOQUEADO` | Intento durante el bloqueo por fuerza bruta |
+
+### 9.3 Protección CSRF
+
+Un sitio malicioso puede hacer que **tu propio navegador** envíe un formulario a nuestra aplicación aprovechando tu sesión abierta: bastaría con visitar una página que contenga un formulario escondido apuntando a `/productos/5/baja`.
+
+Cada formulario lleva un token secreto guardado en la sesión. El sitio atacante no puede conocerlo, y sin él el pedido se rechaza con HTTP 400. La validación es **global para todo POST**, no formulario por formulario.
+
+La comparación usa `secrets.compare_digest`, que tarda lo mismo acierte o falle: comparar con `==` filtraría información por el tiempo de respuesta.
+
+### 9.4 Política de contraseñas
+
+| Regla | Motivo |
+| --- | --- |
+| Mínimo 8 caracteres | Lo que más encarece un ataque es el largo |
+| No puede ser de las más usadas | `password`, `12345678` y compañía son las primeras que prueba cualquier ataque |
+| No puede ser igual al email ni al usuario | Es lo primero que prueba alguien que conoce a la persona |
+| La nueva no puede ser igual a la actual | Si no, "cambiar la contraseña" no cambia nada |
+
+**No se exige "una mayúscula, un número y un símbolo"** a propósito: esa regla empuja a la gente a usar `Password1!` y anotarla en un papel pegado al monitor. Largo y no adivinable protege más.
+
+### 9.5 Recuperación de contraseña
+
+Circuito completo, pensado para un ERP interno sin servidor de correo:
+
+```mermaid
+flowchart LR
+    A[Usuario no puede entrar] --> B["Pide restablecimiento (/recuperar)"]
+    B --> C[Queda pendiente para el administrador]
+    C --> D[El admin genera una contraseña provisoria]
+    D --> E[Se la entrega en mano o por teléfono]
+    E --> F[El usuario ingresa con la provisoria]
+    F --> G[El sistema lo OBLIGA a elegir una propia]
+    G --> H[El admin nunca conoce la definitiva]
+```
+
+Tres decisiones de este circuito:
+
+1. **La respuesta es siempre la misma**, exista o no la cuenta. Si dijera "ese email no está registrado", cualquiera podría averiguar quién tiene acceso al sistema.
+2. **La provisoria se muestra una sola vez.** En la base queda solo su hash: ni el administrador puede volver a consultarla.
+3. **Es legible para dictarla**: `lima-soja-lima-39` en lugar de `K8#mQ2$v`. Se transmite por teléfono sin confundir ceros con oes, y como se cambia en el primer ingreso, no necesita ser memorable.
+
+### 9.6 Aviso del acceso anterior
+
+Al ingresar, el sistema informa: *"Tu acceso anterior fue el 09/10/2026 a las 14:22"*.
+
+Es la defensa más barata que existe: si la persona no reconoce ese horario, sabe que alguien más entró con su cuenta. Ningún sistema automático detecta eso mejor que el propio dueño.
+
+### 9.7 Cambio de contraseña obligatorio
+
+Una contraseña asignada por un administrador es provisoria por definición: alguien más la conoce. Mientras el usuario no la cambie, **cualquier ruta lo devuelve a la pantalla de cambio**.
+
+Para cambiarla se pide también la **contraseña actual**, aunque ya tenga sesión iniciada: si alguien se sienta frente a una pantalla desbloqueada, que no pueda apropiarse de la cuenta.
+
+---
+
+## 10. Autenticación externa (pendiente de configuración)
+
+La idea de sumar "ingresar con Google" es válida y está **prevista en el diseño**, pero no se puede dejar funcionando en esta entrega. Conviene ser claro sobre por qué:
+
+| Requisito | Estado |
+| --- | --- |
+| Credenciales OAuth (client ID y secret) de Google Cloud | ❌ No las tenemos |
+| Dominio público registrado y con HTTPS | ❌ El sistema corre en `localhost` |
+| URL de retorno autorizada en la consola de Google | ❌ Depende del dominio |
+
+En la pantalla de login el botón aparece **deshabilitado y explicado**, en lugar de simular que funciona.
+
+### Cómo encajaría
+
+El modelo de datos lo soporta sin cambios de fondo: haría falta agregar a `usuario` los campos `proveedor_externo` (`LOCAL` / `GOOGLE`) e `id_externo`. El flujo sería:
+
+```
+Usuario → "Ingresar con Google" → Google valida la identidad
+       → vuelve con un token firmado → se busca ese email en `usuario`
+       → si existe y está activo, se inicia sesión normalmente
+```
+
+**La decisión de diseño importante**: Google diría *quién es* la persona (autenticación), pero **el rol y los permisos seguirían saliendo de nuestra base** (autorización). Un ERP no puede delegar en un tercero quién es administrador.
+
+Y `contrasena_hash` pasaría a ser opcional: un usuario que entra solo por Google no tiene contraseña local que guardar.
+
+---
+
+## 11. Verificación de las medidas adicionales
+
+Automatizada en `prueba_seguridad.py`:
+
+| # | Prueba | Resultado |
+| --- | --- | --- |
+| 1 | POST sin token CSRF | HTTP 400 ✅ |
+| 2 | POST con token falso | HTTP 400 ✅ |
+| 3 | POST con token válido | HTTP 302 ✅ |
+| 4 | 5 intentos fallidos seguidos | Todos rechazados ✅ |
+| 5 | La cuenta queda bloqueada | ✅ |
+| 6 | Durante el bloqueo, **ni la contraseña correcta entra** | HTTP 429 ✅ |
+| 7 | Los intentos quedan en la auditoría con su motivo | ✅ |
+| 8 | Cada intento guarda la IP | ✅ |
+| 9 | Rechaza contraseña corta, común, igual al email o al usuario | ✅ |
+| 10 | Acepta una contraseña razonable | ✅ |
+| 11 | El pedido de restablecimiento se registra | ✅ |
+| 12 | Un email inexistente recibe la misma respuesta | ✅ |
+| 13 | Pero no genera solicitud: la respuesta no lo delata | ✅ |
+
+Y el circuito completo de recuperación, verificado de punta a punta:
+
+| # | Paso | Resultado |
+| --- | --- | --- |
+| 1 | El admin ve la solicitud pendiente | ✅ |
+| 2 | Genera la provisoria (`lima-soja-lima-39`) | ✅ |
+| 3 | El usuario entra y es redirigido al cambio obligatorio | ✅ |
+| 4 | Con la provisoria **no puede usar el sistema** | ✅ |
+| 5 | No puede elegir `password` como nueva | ✅ |
+| 6 | Cambia a una válida | ✅ |
+| 7 | Recién ahí accede a `/productos` | ✅ |
+| 8 | La provisoria deja de servir | HTTP 401 ✅ |
+
+### Un bug real que encontraron estas pruebas
+
+Al comparar `bloqueado_hasta` con la hora actual saltó un `TypeError: can't compare offset-naive and offset-aware datetimes`.
+
+La causa: `ahora()` devolvía la fecha **con** zona horaria, pero el tipo `DATETIME` de MariaDB no la almacena, así que al releerla volvía **sin** zona. Se corrigió devolviendo UTC sin `tzinfo`, y quedó documentado en el código para que no vuelva a pasar.
+
+Es el ejemplo de por qué las pruebas valen: el bloqueo "funcionaba" en el papel y rompía el login en el primer uso real.

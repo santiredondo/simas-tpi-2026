@@ -26,6 +26,7 @@
   {% endif %}
 
   <form class="formulario" method="post" novalidate>
+  {{ campo_csrf() }}
     {{ campo("nombre", "Nombre y apellido *", extra='maxlength="100" required') }}
 
     <div class="fila">

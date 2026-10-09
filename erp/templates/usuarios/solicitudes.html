@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block titulo %}Solicitudes de acceso · ERP grupo21{% endblock %}
+
+{% block contenido %}
+  <nav class="miga">
+    <a href="{{ url_for('usuarios.listar') }}">Usuarios</a> / Solicitudes
+  </nav>
+
+  <h1>Solicitudes de restablecimiento</h1>
+  <p class="sutil">
+    Pedidos de gente que no puede entrar. Al resolver uno se genera una
+    contraseña provisoria que tenés que entregarle en mano o por teléfono,
+    nunca por un canal escrito que quede guardado.
+  </p>
+
+  <h2 style="margin-top:1.5rem;font-size:1.05rem">Pendientes</h2>
+
+  {% if not pendientes %}
+    <p class="vacio">No hay solicitudes pendientes.</p>
+  {% else %}
+    <div class="tabla-scroll">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Usuario</th>
+            <th>Solicitado</th>
+            <th class="der">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for solicitud in pendientes %}
+            <tr>
+              <td class="mono">{{ solicitud.email }}</td>
+              <td>{{ solicitud.usuario.nombre if solicitud.usuario else '—' }}</td>
+              <td class="sutil">{{ solicitud.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+              <td class="der">
+                <form method="post"
+                      action="{{ url_for('usuarios.resolver_solicitud', id_solicitud=solicitud.id) }}">
+                  {{ campo_csrf() }}
+                  <button class="boton boton--primario" type="submit">
+                    Generar provisoria
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+
+  {% if atendidas %}
+    <h2 style="margin-top:2rem;font-size:1.05rem">Últimas atendidas</h2>
+    <div class="tabla-scroll" style="margin-top:0.75rem">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Solicitado</th>
+            <th>Atendido</th>
+            <th>Por</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for solicitud in atendidas %}
+            <tr>
+              <td class="mono">{{ solicitud.email }}</td>
+              <td class="sutil">{{ solicitud.fecha.strftime('%d/%m/%Y %H:%M') }}</td>
+              <td class="sutil">{{ solicitud.atendida_en.strftime('%d/%m/%Y %H:%M') }}</td>
+              <td class="sutil">{{ solicitud.atendida_por.nombre if solicitud.atendida_por else '—' }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+{% endblock %}

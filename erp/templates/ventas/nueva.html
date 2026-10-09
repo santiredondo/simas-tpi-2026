@@ -11,6 +11,7 @@
   <p class="sutil">Elegí el cliente. Después vas a poder agregar los productos.</p>
 
   <form class="formulario" method="post">
+  {{ campo_csrf() }}
     <div class="campo">
       <label for="cliente_id">Cliente *</label>
       <select id="cliente_id" name="cliente_id" required

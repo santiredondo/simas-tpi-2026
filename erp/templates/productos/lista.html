@@ -74,6 +74,7 @@
                   <a class="peligro" href="{{ url_for('productos.baja', id_producto=producto.id) }}">Dar de baja</a>
                 {% else %}
                   <form method="post" action="{{ url_for('productos.reactivar', id_producto=producto.id) }}">
+  {{ campo_csrf() }}
                     <button class="enlace" type="submit">Reactivar</button>
                   </form>
                 {% endif %}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recuperar acceso · ERP grupo21</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
+</head>
+<body class="pantalla-login">
+  <main class="tarjeta-login">
+    <h1>Recuperar acceso</h1>
+
+    {% if enviado %}
+      {# El mismo mensaje exista o no la cuenta: decir "ese email no está
+         registrado" permitiría averiguar quiénes tienen cuenta. #}
+      <p class="aviso aviso--exito">
+        Si <strong>{{ email }}</strong> corresponde a una cuenta del sistema,
+        un administrador va a generar una contraseña provisoria y te la va a
+        entregar personalmente.
+      </p>
+      <p class="sutil">
+        El restablecimiento no se manda por correo a propósito: en un sistema
+        interno, la entrega en mano es más segura que un enlace por email.
+      </p>
+      <p style="margin-top:1.25rem">
+        <a href="{{ url_for('auth.login') }}">Volver al ingreso</a>
+      </p>
+    {% else %}
+      <p class="sutil">
+        Indicá tu email y un administrador te va a generar una contraseña
+        provisoria, que después vas a poder cambiar.
+      </p>
+
+      <form method="post">
+        {{ campo_csrf() }}
+        <div class="campo">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required autofocus>
+        </div>
+
+        <button class="boton boton--primario boton--ancho" type="submit">
+          Solicitar restablecimiento
+        </button>
+      </form>
+
+      <p class="sutil" style="margin-top:1rem; text-align:center">
+        <a href="{{ url_for('auth.login') }}">Volver al ingreso</a>
+      </p>
+    {% endif %}
+  </main>
+</body>
+</html>

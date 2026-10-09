@@ -17,8 +17,14 @@ UNIDADES = ("UNIDAD", "KG", "LITRO", "METRO", "CAJA")
 
 
 def ahora() -> datetime:
-    """Fecha y hora actual en UTC, sin depender del reloj del servidor."""
-    return datetime.now(timezone.utc)
+    """Fecha y hora actual en UTC, sin información de zona horaria.
+
+    Se guarda en UTC para no depender de la zona del servidor, pero se devuelve
+    "naive" (sin tzinfo) porque el tipo DATETIME de MariaDB no almacena la zona:
+    si acá se devolviera una fecha con tzinfo, al leerla de la base vendría sin
+    ella y compararlas lanzaría TypeError.
+    """
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class Producto(db.Model):
@@ -253,6 +259,22 @@ class Usuario(db.Model):
     fecha_alta: Mapped[datetime] = mapped_column(db.DateTime, default=ahora)
     ultimo_acceso: Mapped[datetime | None] = mapped_column(db.DateTime)
 
+    # --- Defensa contra fuerza bruta ---
+    # Contador de intentos fallidos seguidos. Se reinicia con cada ingreso
+    # exitoso; al llegar al tope, la cuenta queda bloqueada un rato.
+    intentos_fallidos: Mapped[int] = mapped_column(db.Integer, nullable=False, default=0)
+    bloqueado_hasta: Mapped[datetime | None] = mapped_column(db.DateTime)
+
+    # Las contraseñas que asigna un administrador son provisorias: el dueño de
+    # la cuenta debe elegir una propia, que nadie más conozca.
+    debe_cambiar_contrasena: Mapped[bool] = mapped_column(
+        db.Boolean, nullable=False, default=False
+    )
+
+    @property
+    def esta_bloqueado(self) -> bool:
+        return self.bloqueado_hasta is not None and self.bloqueado_hasta > ahora()
+
     __table_args__ = (
         db.Index("idx_usuario_activo", "activo"),
         db.Index("idx_usuario_rol", "rol_id"),
@@ -260,3 +282,71 @@ class Usuario(db.Model):
 
     def __repr__(self) -> str:
         return f"<Usuario {self.email}>"
+
+
+class IntentoAcceso(db.Model):
+    """Registro de auditoría: todo intento de ingreso queda asentado.
+
+    Sirve para dos cosas que un ERP necesita: detectar ataques (muchos fallos
+    seguidos desde una IP) y responder la pregunta "¿quién entró y cuándo?".
+
+    Se guarda el email tecleado, no el usuario: los intentos contra cuentas
+    inexistentes también interesan, y son los que delatan un ataque.
+    """
+
+    __tablename__ = "intento_acceso"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    email: Mapped[str] = mapped_column(db.String(150), nullable=False)
+    exitoso: Mapped[bool] = mapped_column(db.Boolean, nullable=False)
+    # Motivo del rechazo: CONTRASENA / INEXISTENTE / INACTIVO / BLOQUEADO
+    motivo: Mapped[str | None] = mapped_column(db.String(30))
+    direccion_ip: Mapped[str | None] = mapped_column(db.String(45))
+    fecha: Mapped[datetime] = mapped_column(db.DateTime, default=ahora)
+
+    __table_args__ = (
+        db.Index("idx_intento_email_fecha", "email", "fecha"),
+        db.Index("idx_intento_exitoso", "exitoso"),
+    )
+
+    def __repr__(self) -> str:
+        estado = "OK" if self.exitoso else f"FALLO({self.motivo})"
+        return f"<IntentoAcceso {self.email} {estado}>"
+
+
+class SolicitudRestablecimiento(db.Model):
+    """Pedido de restablecimiento de contraseña.
+
+    Sin servidor de correo no se puede mandar un enlace al usuario, así que el
+    circuito es el de un ERP interno: la persona pide el restablecimiento, un
+    administrador lo ve en el sistema, le asigna una contraseña provisoria y se
+    la entrega por un canal fuera de la aplicación (en mano o por teléfono).
+
+    Esa contraseña nace marcada como provisoria: el dueño de la cuenta está
+    obligado a cambiarla en su primer ingreso, de modo que el administrador no
+    termina conociendo la contraseña definitiva de nadie.
+    """
+
+    __tablename__ = "solicitud_restablecimiento"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    # Se guarda el email tecleado aunque no exista la cuenta: un aluvión de
+    # pedidos contra direcciones inexistentes también es una señal.
+    email: Mapped[str] = mapped_column(db.String(150), nullable=False)
+    usuario_id: Mapped[int | None] = mapped_column(
+        db.ForeignKey("usuario.id", ondelete="SET NULL")
+    )
+    usuario: Mapped["Usuario | None"] = relationship(foreign_keys=[usuario_id])
+
+    fecha: Mapped[datetime] = mapped_column(db.DateTime, default=ahora)
+    atendida: Mapped[bool] = mapped_column(db.Boolean, nullable=False, default=False)
+    atendida_en: Mapped[datetime | None] = mapped_column(db.DateTime)
+    atendida_por_id: Mapped[int | None] = mapped_column(
+        db.ForeignKey("usuario.id", ondelete="SET NULL")
+    )
+    atendida_por: Mapped["Usuario | None"] = relationship(foreign_keys=[atendida_por_id])
+
+    __table_args__ = (db.Index("idx_solicitud_atendida", "atendida", "fecha"),)
+
+    def __repr__(self) -> str:
+        return f"<Solicitud {self.email} {'atendida' if self.atendida else 'pendiente'}>"

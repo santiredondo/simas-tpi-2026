@@ -30,27 +30,49 @@ def crear_app(config=Config) -> Flask:
     app.register_blueprint(ventas.bp)
     app.register_blueprint(usuarios.bp)
 
-    from erp.seguridad import cargar_usuario_actual
+    from erp.seguridad import cargar_usuario_actual, token_csrf, validar_csrf
 
     # Rutas que se pueden ver sin haber iniciado sesión.
-    PUBLICAS = {"auth.login", "static"}
+    PUBLICAS = {"auth.login", "auth.recuperar", "static"}
+    # Rutas accesibles con la contraseña provisoria todavía sin cambiar.
+    SIN_CAMBIO_PENDIENTE = {"auth.cambiar_contrasena", "auth.logout", "static"}
 
     @app.before_request
-    def exigir_sesion():
+    def controlar_acceso():
         """Puerta de entrada única: todo pide sesión salvo lo listado arriba.
 
         Proteger vista por vista es frágil; alcanza con olvidarse un
-        decorador para dejar una puerta abierta.
+        decorador en una ruta nueva para dejar una puerta abierta.
         """
         from flask import g, redirect, request, url_for
 
+        # 1. Todo POST tiene que traer el token CSRF, incluido el login.
+        if request.method == "POST":
+            validar_csrf()
+
         cargar_usuario_actual()
 
+        # 2. Sesión iniciada
         if request.endpoint in PUBLICAS:
             return None
         if g.usuario is None:
             return redirect(url_for("auth.login", siguiente=request.path))
+
+        # 3. Contraseña provisoria: no se puede usar el sistema sin cambiarla.
+        if g.usuario.debe_cambiar_contrasena and request.endpoint not in SIN_CAMBIO_PENDIENTE:
+            return redirect(url_for("auth.cambiar_contrasena"))
+
         return None
+
+    @app.context_processor
+    def inyectar_csrf():
+        """Deja `campo_csrf()` disponible en todas las plantillas."""
+        from markupsafe import Markup
+
+        def campo_csrf() -> Markup:
+            return Markup(f'<input type="hidden" name="csrf" value="{token_csrf()}">')
+
+        return {"campo_csrf": campo_csrf}
 
     @app.get("/")
     def inicio():

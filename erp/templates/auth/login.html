@@ -20,6 +20,7 @@
     {% endif %}
 
     <form method="post">
+  {{ campo_csrf() }}
       <input type="hidden" name="siguiente" value="{{ siguiente }}">
 
       <div class="campo">
@@ -35,7 +36,25 @@
       </div>
 
       <button class="boton boton--primario boton--ancho" type="submit">Ingresar</button>
+
+      <a class="enlace-olvido" href="{{ url_for('auth.recuperar') }}">
+        ¿Olvidaste tu contraseña?
+      </a>
     </form>
+
+    <div class="separador-o">o</div>
+
+    {# Autenticación externa: la arquitectura está preparada (ver
+       docs/usuarios-y-autenticacion.md), pero requiere credenciales de Google
+       y un dominio registrado. El botón se muestra deshabilitado en lugar de
+       simular que funciona. #}
+    <button class="boton boton--externo" type="button" disabled
+            title="Requiere credenciales de Google y un dominio publicado">
+      Ingresar con Google
+    </button>
+    <p class="sutil" style="text-align:center; margin-top:0.5rem">
+      Disponible cuando el sistema se publique con dominio propio.
+    </p>
   </main>
 </body>
 </html>
