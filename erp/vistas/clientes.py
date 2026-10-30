@@ -21,6 +21,18 @@ def _buscar_cliente(id_cliente: int) -> Cliente:
     return db.get_or_404(Cliente, id_cliente, description="Cliente inexistente")
 
 
+def _destino_de_vuelta() -> str | None:
+    """Ruta a la que volver después del alta, si vino de otra pantalla.
+
+    Solo se acepta una ruta interna: un destino con http:// externo convertiría
+    el formulario en un trampolín hacia otro sitio.
+    """
+    destino = request.args.get("volver") or request.form.get("volver") or ""
+    if destino.startswith("/") and not destino.startswith("//"):
+        return destino
+    return None
+
+
 def _documento_repetido(documento: str | None, excluir_id: int | None = None) -> bool:
     """True si otro cliente ya tiene ese documento.
 
@@ -68,6 +80,8 @@ def listar():
 # ---------------------------------------------------------------------------
 @bp.route("/nuevo", methods=["GET", "POST"])
 def crear():
+    volver = _destino_de_vuelta()
+
     if request.method == "GET":
         return render_template(
             "clientes/formulario.html",
@@ -76,6 +90,7 @@ def crear():
             cliente=None,
             valores={},
             errores={},
+            volver=volver,
         )
 
     datos, errores = validar_cliente(request.form)
@@ -92,6 +107,7 @@ def crear():
                 cliente=None,
                 valores=request.form,
                 errores=errores,
+                volver=volver,
             ),
             400,
         )
@@ -101,6 +117,12 @@ def crear():
     db.session.commit()
 
     flash(f"Cliente {cliente.razon_social} creado correctamente.", "exito")
+
+    # Si el alta se abrió desde la pantalla de venta, se vuelve ahí con el
+    # cliente ya seleccionado: el vendedor no pierde el paso.
+    if volver:
+        return redirect(f"{volver}?cliente={cliente.id}" if "?" not in volver else volver)
+
     return redirect(url_for("clientes.listar"))
 
 

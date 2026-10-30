@@ -114,6 +114,7 @@ semillas.py          datos de ejemplo
 | Workshop 3 · Checkpoint 1 — campos y pantallas | ✅ [docs/crud-productos-diseno.md](docs/crud-productos-diseno.md) |
 | Workshop 3 · Checkpoint 2 — CRUD generado e iterado | ✅ [docs/crud-productos-iteracion.md](docs/crud-productos-iteracion.md) |
 | Workshop 3 — CRUD de Productos | ✅ |
+| Workshop 5 · Checkpoint 1 — campos de cliente, casos de uso y pantalla de venta | ✅ [docs/clientes-y-ventas-diseno.md](docs/clientes-y-ventas-diseno.md) |
 | Módulo de clientes | ✅ |
 | Registro de ventas (con descuento de stock) | ✅ |
 | Registro de compras | ⬜ |

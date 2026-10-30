@@ -18,7 +18,9 @@
               class="{{ 'con-error' if errores.get('cliente_id') }}">
         <option value="">Elegí un cliente...</option>
         {% for cliente in clientes %}
-          <option value="{{ cliente.id }}">
+          {# Si venimos de cargar un cliente nuevo, queda preseleccionado #}
+          <option value="{{ cliente.id }}"
+                  {{ 'selected' if preseleccionado and preseleccionado == cliente.id }}>
             {{ cliente.razon_social }}{% if cliente.documento %} — {{ cliente.documento }}{% endif %}
           </option>
         {% endfor %}
@@ -26,10 +28,19 @@
       {% if errores.get('cliente_id') %}
         <p class="error">⚠ {{ errores['cliente_id'] }}</p>
       {% endif %}
-      {% if not clientes %}
+      {% if clientes %}
+        <p class="sutil" style="margin-top:0.4rem">
+          ¿El cliente no está en la lista?
+          <a href="{{ url_for('clientes.crear', volver=url_for('ventas.nueva')) }}">
+            Cargalo ahora
+          </a> y volvés acá con el cliente ya elegido.
+        </p>
+      {% else %}
         <p class="error">
           No hay clientes activos.
-          <a href="{{ url_for('clientes.crear') }}">Cargá uno primero</a>.
+          <a href="{{ url_for('clientes.crear', volver=url_for('ventas.nueva')) }}">
+            Cargá uno primero
+          </a>.
         </p>
       {% endif %}
     </div>

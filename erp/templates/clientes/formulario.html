@@ -26,7 +26,8 @@
   {% endif %}
 
   <form class="formulario" method="post" novalidate>
-  {{ campo_csrf() }}
+    {{ campo_csrf() }}
+    {% if volver %}<input type="hidden" name="volver" value="{{ volver }}">{% endif %}
     {{ campo("razon_social", "Razón social *", extra='maxlength="150" required') }}
 
     <div class="fila">
@@ -41,7 +42,7 @@
 
     <div class="acciones-form">
       <button class="boton boton--primario" type="submit">{{ etiqueta_boton }}</button>
-      <a class="cancelar" href="{{ url_for('clientes.listar') }}">Cancelar</a>
+      <a class="cancelar" href="{{ volver or url_for('clientes.listar') }}">Cancelar</a>
     </div>
   </form>
 

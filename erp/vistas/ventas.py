@@ -56,7 +56,15 @@ def nueva():
     ).all()
 
     if request.method == "GET":
-        return render_template("ventas/nueva.html", clientes=clientes, errores={})
+        # Si se acaba de cargar un cliente desde esta misma pantalla, vuelve
+        # con su id para dejarlo elegido.
+        preseleccionado = request.args.get("cliente", type=int)
+        return render_template(
+            "ventas/nueva.html",
+            clientes=clientes,
+            errores={},
+            preseleccionado=preseleccionado,
+        )
 
     cliente_id = request.form.get("cliente_id")
     if not cliente_id:
@@ -65,6 +73,7 @@ def nueva():
                 "ventas/nueva.html",
                 clientes=clientes,
                 errores={"cliente_id": "Elegí un cliente"},
+                preseleccionado=None,
             ),
             400,
         )
@@ -76,6 +85,7 @@ def nueva():
                 "ventas/nueva.html",
                 clientes=clientes,
                 errores={"cliente_id": "El cliente no está disponible"},
+                preseleccionado=None,
             ),
             400,
         )
