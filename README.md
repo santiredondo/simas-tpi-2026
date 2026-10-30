@@ -117,6 +117,7 @@ semillas.py          datos de ejemplo
 | Workshop 5 · Checkpoint 1 — campos de cliente, casos de uso y pantalla de venta | ✅ [docs/clientes-y-ventas-diseno.md](docs/clientes-y-ventas-diseno.md) |
 | Módulo de clientes | ✅ |
 | Registro de ventas (con descuento de stock) | ✅ |
+| Workshop 5 · Checkpoint 2 — resumen, diagrama y multimedia | ✅ [docs/resumen-erp.md](docs/resumen-erp.md) · [guía NotebookLM](docs/guia-notebooklm.md) |
 | Registro de compras | ⬜ |
 | Workshop 4 · Checkpoint 1 — campos de usuario y autenticación | ✅ [docs/usuarios-y-autenticacion.md](docs/usuarios-y-autenticacion.md) |
 | Administración de usuarios + login | ✅ |

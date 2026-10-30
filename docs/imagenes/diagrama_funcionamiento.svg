@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 760" width="1100" height="760" font-family="system-ui, 'Segoe UI', sans-serif">
+  <rect width="1100" height="760" fill="#ffffff"/>
+
+  <text x="40" y="46" font-size="24" font-weight="700" fill="#0f172a">Cómo funciona el ERP grupo21</text>
+  <text x="40" y="70" font-size="13" fill="#64748b">SIMA 2026 · Python · Flask · MariaDB — De la persona que lo usa hasta el dato guardado</text>
+
+  <!-- ============================ 1. USUARIOS ============================ -->
+  <text x="40" y="112" font-size="12" font-weight="700" fill="#2563eb" letter-spacing="1">QUIÉN LO USA</text>
+
+  <rect x="40" y="124" width="150" height="62" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="56" y="148" font-size="13" font-weight="600" fill="#1e40af">Administrador</text>
+  <text x="56" y="167" font-size="11" fill="#3b82f6">Todo + usuarios</text>
+
+  <rect x="205" y="124" width="150" height="62" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="221" y="148" font-size="13" font-weight="600" fill="#1e40af">Vendedor</text>
+  <text x="221" y="167" font-size="11" fill="#3b82f6">Ventas y clientes</text>
+
+  <rect x="370" y="124" width="150" height="62" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="386" y="148" font-size="13" font-weight="600" fill="#1e40af">Comprador</text>
+  <text x="386" y="167" font-size="11" fill="#3b82f6">Productos y stock</text>
+
+  <!-- ============================ 2. PUERTA ============================ -->
+  <line x1="280" y1="186" x2="280" y2="212" stroke="#475569" stroke-width="2"/>
+  <polygon points="280,224 275,212 285,212" fill="#475569"/>
+
+  <rect x="40" y="224" width="480" height="78" rx="8" fill="#fef3c7" stroke="#fcd34d" stroke-width="1.5"/>
+  <text x="56" y="248" font-size="13" font-weight="700" fill="#92400e">PUERTA DE ENTRADA — toda ruta exige sesión</text>
+  <text x="56" y="269" font-size="11" fill="#92400e">Login con contraseña hasheada (scrypt + salt) · Sesión firmada, vence a los 30 min</text>
+  <text x="56" y="287" font-size="11" fill="#92400e">Token CSRF en cada formulario · Bloqueo tras 5 intentos fallidos · Auditoría con IP</text>
+
+  <!-- ============================ 3. MÓDULOS ============================ -->
+  <line x1="280" y1="302" x2="280" y2="330" stroke="#475569" stroke-width="2"/>
+  <polygon points="280,342 275,330 285,330" fill="#475569"/>
+
+  <text x="40" y="332" font-size="12" font-weight="700" fill="#2563eb" letter-spacing="1">QUÉ HACE</text>
+
+  <rect x="40" y="342" width="150" height="96" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="40" y="342" width="150" height="26" rx="8" fill="#2563eb"/>
+  <rect x="40" y="360" width="150" height="8" fill="#2563eb"/>
+  <text x="54" y="360" font-size="12" font-weight="700" fill="#ffffff">PRODUCTOS</text>
+  <text x="54" y="388" font-size="11" fill="#0f172a">Alta · baja · edición</text>
+  <text x="54" y="406" font-size="11" fill="#0f172a">Precio y stock</text>
+  <text x="54" y="424" font-size="11" fill="#b45309">Aviso "Reponer"</text>
+
+  <rect x="205" y="342" width="150" height="96" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="205" y="342" width="150" height="26" rx="8" fill="#2563eb"/>
+  <rect x="205" y="360" width="150" height="8" fill="#2563eb"/>
+  <text x="219" y="360" font-size="12" font-weight="700" fill="#ffffff">CLIENTES</text>
+  <text x="219" y="388" font-size="11" fill="#0f172a">Alta · baja · edición</text>
+  <text x="219" y="406" font-size="11" fill="#0f172a">Búsqueda</text>
+  <text x="219" y="424" font-size="11" fill="#0f172a">Documento único</text>
+
+  <rect x="370" y="342" width="150" height="96" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="370" y="342" width="150" height="26" rx="8" fill="#2563eb"/>
+  <rect x="370" y="360" width="150" height="8" fill="#2563eb"/>
+  <text x="384" y="360" font-size="12" font-weight="700" fill="#ffffff">USUARIOS</text>
+  <text x="384" y="388" font-size="11" fill="#0f172a">Roles y permisos</text>
+  <text x="384" y="406" font-size="11" fill="#0f172a">Solo administrador</text>
+  <text x="384" y="424" font-size="11" fill="#0f172a">Recuperar acceso</text>
+
+  <!-- ============================ 4. VENTAS ============================ -->
+  <rect x="560" y="124" width="500" height="314" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="2"/>
+  <text x="580" y="152" font-size="14" font-weight="700" fill="#166534">VENTAS — el flujo central</text>
+  <text x="580" y="172" font-size="11" fill="#15803d">Donde se juntan clientes, productos y stock</text>
+
+  <!-- Estados -->
+  <rect x="580" y="192" width="130" height="60" rx="8" fill="#fef3c7" stroke="#fcd34d" stroke-width="1.5"/>
+  <text x="595" y="216" font-size="12" font-weight="700" fill="#92400e">BORRADOR</text>
+  <text x="595" y="234" font-size="10" fill="#92400e">Se arma libremente</text>
+  <text x="595" y="247" font-size="10" fill="#92400e">No toca el stock</text>
+
+  <line x1="710" y1="222" x2="748" y2="222" stroke="#475569" stroke-width="2"/>
+  <polygon points="760,222 748,217 748,227" fill="#475569"/>
+  <text x="702" y="210" font-size="9" fill="#475569">confirmar</text>
+
+  <rect x="760" y="192" width="130" height="60" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
+  <text x="775" y="216" font-size="12" font-weight="700" fill="#166534">CONFIRMADA</text>
+  <text x="775" y="234" font-size="10" fill="#166534">Descuenta stock</text>
+  <text x="775" y="247" font-size="10" fill="#166534">Queda inmutable</text>
+
+  <line x1="890" y1="222" x2="928" y2="222" stroke="#475569" stroke-width="2"/>
+  <polygon points="940,222 928,217 928,227" fill="#475569"/>
+  <text x="888" y="210" font-size="9" fill="#475569">anular</text>
+
+  <rect x="940" y="192" width="100" height="60" rx="8" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="955" y="216" font-size="12" font-weight="700" fill="#475569">ANULADA</text>
+  <text x="955" y="234" font-size="10" fill="#64748b">Devuelve stock</text>
+  <text x="955" y="247" font-size="10" fill="#64748b">No se borra</text>
+
+  <!-- Al confirmar -->
+  <rect x="580" y="274" width="460" height="148" rx="8" fill="#ffffff" stroke="#bbf7d0" stroke-width="1.5"/>
+  <text x="596" y="298" font-size="12" font-weight="700" fill="#166534">Al confirmar, dentro de UNA transacción:</text>
+  <text x="596" y="322" font-size="11" fill="#0f172a">1 · Bloquea la fila del producto</text>
+  <text x="610" y="338" font-size="10" fill="#64748b">para que dos ventas simultáneas no vendan el mismo stock</text>
+  <text x="596" y="360" font-size="11" fill="#0f172a">2 · Verifica el stock otra vez</text>
+  <text x="610" y="376" font-size="10" fill="#64748b">entre el borrador y la confirmación pudieron pasar horas</text>
+  <text x="596" y="398" font-size="11" fill="#0f172a">3 · Descuenta y registra el movimiento</text>
+  <text x="610" y="414" font-size="10" fill="#64748b">si algo falla, se deshace todo: nunca queda media venta</text>
+
+  <!-- ============================ 5. BASE DE DATOS ============================ -->
+  <line x1="280" y1="438" x2="280" y2="482" stroke="#475569" stroke-width="2"/>
+  <polygon points="280,494 275,482 285,482" fill="#475569"/>
+  <line x1="790" y1="438" x2="790" y2="482" stroke="#475569" stroke-width="2"/>
+  <polygon points="790,494 785,482 795,482" fill="#475569"/>
+
+  <text x="40" y="478" font-size="12" font-weight="700" fill="#2563eb" letter-spacing="1">DÓNDE SE GUARDA</text>
+
+  <rect x="40" y="494" width="1020" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="60" y="520" font-size="13" font-weight="700" fill="#0f172a">MariaDB — 9 tablas</text>
+
+  <rect x="60" y="534" width="104" height="52" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="72" y="556" font-size="11" font-weight="600" fill="#0f172a">producto</text>
+  <text x="72" y="573" font-size="10" fill="#64748b">stock actual</text>
+
+  <rect x="176" y="534" width="104" height="52" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="188" y="556" font-size="11" font-weight="600" fill="#0f172a">cliente</text>
+
+  <rect x="292" y="534" width="104" height="52" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="304" y="556" font-size="11" font-weight="600" fill="#0f172a">venta</text>
+  <text x="304" y="573" font-size="10" fill="#64748b">+ renglones</text>
+
+  <rect x="408" y="534" width="140" height="52" rx="6" fill="#fef9c3" stroke="#fcd34d"/>
+  <text x="420" y="556" font-size="11" font-weight="700" fill="#92400e">movimiento_stock</text>
+  <text x="420" y="573" font-size="10" fill="#92400e">el libro mayor</text>
+
+  <rect x="560" y="534" width="104" height="52" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="572" y="556" font-size="11" font-weight="600" fill="#0f172a">usuario</text>
+  <text x="572" y="573" font-size="10" fill="#64748b">hash scrypt</text>
+
+  <rect x="676" y="534" width="104" height="52" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="688" y="556" font-size="11" font-weight="600" fill="#0f172a">rol</text>
+
+  <rect x="792" y="534" width="124" height="52" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="804" y="556" font-size="11" font-weight="600" fill="#0f172a">intento_acceso</text>
+  <text x="804" y="573" font-size="10" fill="#64748b">auditoría</text>
+
+  <rect x="928" y="534" width="112" height="52" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="940" y="556" font-size="11" font-weight="600" fill="#0f172a">solicitudes</text>
+  <text x="940" y="573" font-size="10" fill="#64748b">de acceso</text>
+
+  <!-- ============================ 6. REGLAS ============================ -->
+  <text x="40" y="640" font-size="12" font-weight="700" fill="#2563eb" letter-spacing="1">LAS REGLAS QUE LO GOBIERNAN</text>
+
+  <rect x="40" y="652" width="243" height="74" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="56" y="674" font-size="12" font-weight="700" fill="#0f172a">Nada se borra</text>
+  <text x="56" y="692" font-size="10" fill="#64748b">Productos, clientes y usuarios se</text>
+  <text x="56" y="706" font-size="10" fill="#64748b">desactivan. Borrarlos dejaría las</text>
+  <text x="56" y="720" font-size="10" fill="#64748b">ventas apuntando a la nada.</text>
+
+  <rect x="299" y="652" width="243" height="74" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="315" y="674" font-size="12" font-weight="700" fill="#0f172a">El precio se congela</text>
+  <text x="315" y="692" font-size="10" fill="#64748b">Cada renglón guarda una copia del</text>
+  <text x="315" y="706" font-size="10" fill="#64748b">precio. Si mañana sube, las ventas</text>
+  <text x="315" y="720" font-size="10" fill="#64748b">de ayer no se alteran.</text>
+
+  <rect x="558" y="652" width="243" height="74" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="574" y="674" font-size="12" font-weight="700" fill="#0f172a">Todo movimiento deja rastro</text>
+  <text x="574" y="692" font-size="10" fill="#64748b">El stock nunca cambia sin su asiento</text>
+  <text x="574" y="706" font-size="10" fill="#64748b">en el libro mayor, con el resultado</text>
+  <text x="574" y="720" font-size="10" fill="#64748b">de ese momento.</text>
+
+  <rect x="817" y="652" width="243" height="74" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="833" y="674" font-size="12" font-weight="700" fill="#0f172a">Validación en 3 capas</text>
+  <text x="833" y="692" font-size="10" fill="#64748b">El navegador avisa, Python valida y</text>
+  <text x="833" y="706" font-size="10" fill="#64748b">la base rechaza. Cada capa cubre</text>
+  <text x="833" y="720" font-size="10" fill="#64748b">una vía distinta de entrada.</text>
+
+  <text x="40" y="748" font-size="11" fill="#94a3b8">Team grupo21 · Santiago Redondo · Lautaro Rizzi · David Bustamante · 87 pruebas verificadas</text>
+</svg>
