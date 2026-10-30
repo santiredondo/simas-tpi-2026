@@ -6,6 +6,7 @@ pasado ese plazo sin actividad, el sistema deja de reconocer al usuario.
 Uso:  python prueba_caducidad.py
 """
 
+import re
 import time
 from datetime import timedelta
 
@@ -19,6 +20,12 @@ class ConfigCorta(Config):
     PERMANENT_SESSION_LIFETIME = timedelta(seconds=2)
 
 
+def csrf(cliente, ruta="/login") -> str:
+    """Token CSRF del formulario: desde que existe la protección, todo POST lo exige."""
+    html = cliente.get(ruta).get_data(as_text=True)
+    return re.search(r'name="csrf" value="([^"]+)"', html).group(1)
+
+
 def main() -> None:
     app = crear_app(ConfigCorta)
     cliente = app.test_client()
@@ -26,7 +33,11 @@ def main() -> None:
     print("1. Ingreso al sistema...")
     respuesta = cliente.post(
         "/login",
-        data={"email": "santiago@grupo21.test", "contrasena": "grupo21.santiago"},
+        data={
+            "email": "santiago@grupo21.test",
+            "contrasena": "grupo21.santiago",
+            "csrf": csrf(cliente),
+        },
     )
     assert respuesta.status_code == 302, "El login debería redirigir"
     print(f"   OK — redirige a {respuesta.headers['Location']}")
@@ -48,7 +59,11 @@ def main() -> None:
     print("\n5. Control: con actividad constante la sesión NO vence...")
     cliente.post(
         "/login",
-        data={"email": "santiago@grupo21.test", "contrasena": "grupo21.santiago"},
+        data={
+            "email": "santiago@grupo21.test",
+            "contrasena": "grupo21.santiago",
+            "csrf": csrf(cliente),
+        },
     )
     for intento in range(4):
         time.sleep(1)

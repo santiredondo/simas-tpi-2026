@@ -38,9 +38,33 @@ def aviso(html, clase="error"):
     return encontrado.group(1).strip() if encontrado else None
 
 
+# Clientes que crea la prueba y que hay que limpiar entre corridas.
+CLIENTES_DE_PRUEBA = (
+    "Ferretería Industrial del Norte", "Otro nombre", "Sin documento A",
+    "Sin documento B", "Cliente creado desde la venta",
+    "Control de destino externo",
+)
+DOCUMENTO_DE_PRUEBA = "30-12345678-9"
+
+
 def preparar(app):
-    """Deja el producto y el cliente de prueba en un estado conocido."""
+    """Deja el producto y el cliente de prueba en un estado conocido.
+
+    Limpia también lo que haya quedado de corridas anteriores. No alcanza con
+    desactivar los clientes: el documento es ÚNICO en la base, así que si no se
+    libera, la segunda corrida choca contra el de la primera.
+    """
     with app.app_context():
+        for razon in CLIENTES_DE_PRUEBA:
+            for anterior in db.session.query(Cliente).filter_by(razon_social=razon).all():
+                anterior.documento = None
+                anterior.activo = False
+
+        for anterior in db.session.query(Cliente).filter_by(documento=DOCUMENTO_DE_PRUEBA).all():
+            anterior.documento = None
+            anterior.activo = False
+
+        db.session.commit()
         producto = db.session.query(Producto).filter_by(codigo=CODIGO_PRUEBA).first()
         if producto is None:
             producto = Producto(codigo=CODIGO_PRUEBA, nombre="Producto de prueba")
@@ -86,7 +110,7 @@ def main() -> None:
         "/clientes/nuevo",
         data={
             "razon_social": "Ferretería Industrial del Norte",
-            "documento": "30-12345678-9",
+            "documento": DOCUMENTO_DE_PRUEBA,
             "email": "ventas@ferreteria-norte.test",
             "csrf": csrf(c, "/clientes/nuevo"),
         },
@@ -98,7 +122,7 @@ def main() -> None:
         "/clientes/nuevo",
         data={
             "razon_social": "Otro nombre",
-            "documento": "30-12345678-9",
+            "documento": DOCUMENTO_DE_PRUEBA,
             "csrf": csrf(c, "/clientes/nuevo"),
         },
     ).get_data(as_text=True)
@@ -294,11 +318,7 @@ def main() -> None:
     # -----------------------------------------------------------------------
     print("\n--- Limpieza ---")
     with app.app_context():
-        for razon in (
-            "Ferretería Industrial del Norte", "Otro nombre", "Sin documento A",
-            "Sin documento B", "Cliente creado desde la venta",
-            "Control de destino externo", CLIENTE_PRUEBA,
-        ):
+        for razon in CLIENTES_DE_PRUEBA + (CLIENTE_PRUEBA,):
             cliente = db.session.query(Cliente).filter_by(razon_social=razon).first()
             if cliente:
                 cliente.activo = False
